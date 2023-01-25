@@ -12,6 +12,8 @@ import numpy as np
 from configparser import ConfigParser
 from timeit import default_timer as timer
 
+from scipy.spatial.transform import Rotation
+
 
 class GetSimilarityScores:
     def __init__(self, ref_file, dataset_files_pattern, working_dir=None):
@@ -19,6 +21,8 @@ class GetSimilarityScores:
         self.ref_file = f"{self.working_dir}/{ref_file}"
         self.dataset_files = [f"{self.working_dir}/{i}" for i in glob.glob(dataset_files_pattern)]
         self.transformation_arrays = None
+        self.rotation = np.array([])
+        self.translation  = np.array([])
 
     def run_paper(self, paper_cmd=None, gpu_id=0, cleanup=True):
         run_file = f"{self.working_dir}/runfile"
@@ -52,6 +56,26 @@ class GetSimilarityScores:
         if cleanup:
             print("Cleaning up...")
             os.remove(f"{self.working_dir}/runfile")
+
+    def convert_transformation_arrays(self):
+        # Extract rotation matrix and translation vector from transformation matrix
+        for arr in self.transformation_arrays:
+            r = Rotation.from_dcm(arr[:3, :3]).as_quat()
+            self.rotation = np.vstack((self.rotation, r)) if self.rotation.size else r
+            t = arr[:3, 3]
+            self.translation = np.vstack((self.translation, t)) if self.translation.size else t
+
+    def read_molecules(self):
+        # TODO: replace this since PAPER already reads molecules
+        pass
+
+    def transform_molecules(self):
+        pass
+
+    def calculate_similarity_scores(self):
+        pass
+
+
 
 
 
