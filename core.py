@@ -14,11 +14,10 @@ from timeit import default_timer as timer
 
 
 class GetSimilarityScores:
-
-    def __init__(self, ref_mol, dataset_mol_pattern, working_dir=None):
+    def __init__(self, ref_file, dataset_files_pattern, working_dir=None):
         self.working_dir = working_dir or os.getcwd()
-        self.ref_file = f"{self.working_dir}/{ref_mol}"
-        self.dataset_files = [f"{self.working_dir}/{i}" for i in glob.glob(dataset_mol_pattern)]
+        self.ref_file = f"{self.working_dir}/{ref_file}"
+        self.dataset_files = [f"{self.working_dir}/{i}" for i in glob.glob(dataset_files_pattern)]
         self.transformation_arrays = None
 
     def run_paper(self, paper_cmd=None, gpu_id=0, cleanup=True):
@@ -28,16 +27,18 @@ class GetSimilarityScores:
                 f.write(file + "\n")
 
         # TODO: add mode and arguments that can be specified to paper
+        # TODO: include a case where the run_file is provided as input
         if not paper_cmd:
             cfg = ConfigParser()
             cfg.read("config/config.ini")
             cmd = cfg["RunPAPER"]["paper_cmd"]
-        paper_cmd = cmd.replace("$gpu_id$", str(gpu_id)).replace("$run_file$", run_file)
+            paper_cmd = cmd.replace("$gpu_id$", str(gpu_id)).replace("$run_file$", run_file)
 
         st = timer()
         return_code = subprocess.run(paper_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         run_time = timer() - st
         print(f"Run time: {run_time}")
+
         output = return_code.stdout.decode()
         output_strings = output.split("[[")
         output_strings = [i.replace("]]", "") for i in output_strings]
