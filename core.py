@@ -46,7 +46,8 @@ class GetSimilarityScores:
         output_strings = [i.strip() for i in output_strings if i]
 
         # convert each string into a numpy array
-        self.transformation_arrays = [np.fromstring(output_string, dtype=float, sep=' ') for output_string in output_strings]
+        output_arrays = [np.fromstring(output_string, dtype=float, sep=' ') for output_string in output_strings]
+        self.transformation_arrays = [np.reshape(output_array, (4, 4)) for output_array in output_arrays]
 
         if cleanup:
             print("Cleaning up...")
