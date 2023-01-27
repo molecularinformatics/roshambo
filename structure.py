@@ -19,7 +19,9 @@ class Molecule:
     def optimize_mol(self, addHs=True):
         if addHs:
             self.mol = Chem.AddHs(self.mol)
-        AllChem.EmbedMolecule(self.mol, useExpTorsionAnglePrefs=True, useBasicKnowledge=True)
+        AllChem.EmbedMolecule(
+            self.mol, useExpTorsionAnglePrefs=True, useBasicKnowledge=True
+        )
         AllChem.UFFOptimizeMolecule(self.mol)
 
     def get_xyz_from_mol(self):
@@ -63,4 +65,3 @@ class Molecule:
             writer.close()
         else:
             raise ValueError("Invalid file format")
-
