@@ -19,7 +19,7 @@ class GetSimilarityScores:
     def __init__(self, ref_file, dataset_files_pattern, working_dir=None):
         self.working_dir = working_dir or os.getcwd()
         self.ref_file = f"{self.working_dir}/{ref_file}"
-        self.dataset_files = [f"{self.working_dir}/{i}" for i in glob.glob(dataset_files_pattern)]
+        self.dataset_files = glob.glob(f"{self.working_dir}/{dataset_files_pattern}")
         self.transformation_arrays = None
         self.rotation = np.array([])
         self.translation  = np.array([])
