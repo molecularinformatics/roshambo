@@ -36,7 +36,7 @@ def split_sdf_file(input_file, output_dir, max_mols_per_file=20):
 
     Args:
         input_file (str): input sdf file name.
-        output_dir (str): output directory where the sdf file is located.
+        output_dir (str): output directory where the sdf file is saved.
         max_mols_per_file (int): maximum number of molecules per output file.
 
     Returns:
@@ -45,7 +45,7 @@ def split_sdf_file(input_file, output_dir, max_mols_per_file=20):
     suppl = Chem.ForwardSDMolSupplier(input_file, removeHs=False)
     count = 0
     file_count = 0
-    w = Chem.SDWriter(f"{output_dir}/part_{file_count}.sdf")
+    w = Chem.SDWriter(f"{output_dir}/mol_{file_count}.sdf")
 
     for mol in suppl:
         if mol is None:
@@ -56,8 +56,7 @@ def split_sdf_file(input_file, output_dir, max_mols_per_file=20):
             w.flush()
             w.close()
             file_count += 1
-            w = Chem.SDWriter(f'{output_dir}/part_{file_count}.sdf')
+            w = Chem.SDWriter(f"{output_dir}/mol_{file_count}.sdf")
     w.flush()
     w.close()
-
 
