@@ -22,7 +22,7 @@ class GetSimilarityScores:
         self.dataset_files = glob.glob(f"{self.working_dir}/{dataset_files_pattern}")
         self.transformation_arrays = None
         self.rotation = np.array([])
-        self.translation  = np.array([])
+        self.translation = np.array([])
 
     def run_paper(self, paper_cmd=None, gpu_id=0, cleanup=True):
         run_file = f"{self.working_dir}/runfile"
@@ -36,10 +36,14 @@ class GetSimilarityScores:
             cfg = ConfigParser()
             cfg.read("config/config.ini")
             cmd = cfg["RunPAPER"]["paper_cmd"]
-            paper_cmd = cmd.replace("$gpu_id$", str(gpu_id)).replace("$run_file$", run_file)
+            paper_cmd = cmd.replace("$gpu_id$", str(gpu_id)).replace(
+                "$run_file$", run_file
+            )
 
         st = timer()
-        return_code = subprocess.run(paper_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return_code = subprocess.run(
+            paper_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         run_time = timer() - st
         print(f"Run time: {run_time}")
 
@@ -50,8 +54,13 @@ class GetSimilarityScores:
         output_strings = [i.strip() for i in output_strings if i]
 
         # convert each string into a numpy array
-        output_arrays = [np.fromstring(output_string, dtype=float, sep=' ') for output_string in output_strings]
-        self.transformation_arrays = [np.reshape(output_array, (4, 4)) for output_array in output_arrays]
+        output_arrays = [
+            np.fromstring(output_string, dtype=float, sep=" ")
+            for output_string in output_strings
+        ]
+        self.transformation_arrays = [
+            np.reshape(output_array, (4, 4)) for output_array in output_arrays
+        ]
 
         if cleanup:
             print("Cleaning up...")
@@ -63,7 +72,9 @@ class GetSimilarityScores:
             r = Rotation.from_dcm(arr[:3, :3]).as_quat()
             self.rotation = np.vstack((self.rotation, r)) if self.rotation.size else r
             t = arr[:3, 3]
-            self.translation = np.vstack((self.translation, t)) if self.translation.size else t
+            self.translation = (
+                np.vstack((self.translation, t)) if self.translation.size else t
+            )
 
     def read_molecules(self):
         # TODO: replace this since PAPER already reads molecules
