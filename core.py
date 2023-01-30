@@ -92,8 +92,30 @@ class GetSimilarityScores:
             if write_to_file:
                 mol.write_molfile(f"{file.split('.')[0]}_trans.sdf")
 
-    def calculate_similarity_scores(self):
-        pass
+    def _calculate_overlap_volume(self, grid, ref_mol, fit_mol):
+        gcs = grid.converted_grid
+        volume = 0
+        ref_mol_coords_radii = ref_mol.get_atomic_coordinates_and_radii()
+        fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii()
+        for gc in gcs:
+            ref_grid = np.prod(
+                [
+                    1 - self.rho(ref_mol_coords_radii[i], gc)
+                    for i in range(len(ref_mol_coords_radii))
+                ],
+                axis=0,
+            )
+            ref_grid = 1 - ref_grid
+            fit_grid = np.prod(
+                [
+                    1 - self.rho(fit_mol_coords_radii[i], gc)
+                    for i in range(len(fit_mol_coords_radii))
+                ],
+                axis=0,
+            )
+            fit_grid = 1 - fit_grid
+            volume += ref_grid * fit_grid
+        return volume * grid.res * grid.res * grid.res
 
 
 
