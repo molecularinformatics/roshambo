@@ -1,0 +1,13 @@
+__pycache__/
+.DS_Store
+pypaper.egg-info
+dist
+_build
+build
+.settings
+.externalToolBuilders
+.idea
+setuptools*
+.cache
+.eggs/
+.*_cache
