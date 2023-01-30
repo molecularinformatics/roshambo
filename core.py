@@ -147,6 +147,16 @@ class GetSimilarityScores:
             fit_grid.create_grid()
             fit_overlap = self._calculate_overlap_volume(fit_grid, fit_mol, fit_mol)
 
+            ref_fit_overlap = self._calculate_overlap_volume(
+                ref_grid
+                if np.prod(ref_grid.extent) < np.prod(fit_grid.extent)
+                else fit_grid,
+                self.ref_mol,
+                fit_mol,
+            )
+            tanimoto = ref_fit_overlap / (ref_overlap + fit_overlap - ref_fit_overlap)
+            full_tanimoto.append(tanimoto)
+        return full_tanimoto
 
     @staticmethod
     def rho(atom, gc):
