@@ -19,6 +19,8 @@ class GetSimilarityScores:
     def __init__(self, ref_file, dataset_files_pattern, working_dir=None):
         self.working_dir = working_dir or os.getcwd()
         self.ref_file = f"{self.working_dir}/{ref_file}"
+        self.ref_mol = Molecule()
+        self.ref_mol.read_from_molfile(self.ref_file, opt=False, removeHs=False)
         self.dataset_files = glob.glob(f"{self.working_dir}/{dataset_files_pattern}")
         self.transformation_arrays = None
         self.rotation = np.array([])
