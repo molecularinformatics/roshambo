@@ -8,6 +8,7 @@ import glob
 import subprocess
 
 import numpy as np
+import pandas as pd
 
 from configparser import ConfigParser
 from timeit import default_timer as timer
@@ -156,7 +157,15 @@ class GetSimilarityScores:
             )
             tanimoto = ref_fit_overlap / (ref_overlap + fit_overlap - ref_fit_overlap)
             full_tanimoto.append(tanimoto)
-        return full_tanimoto
+        df = pd.DataFrame(
+            {
+                "Molecule": [os.path.basename(path) for path in self.dataset_files],
+                "Tanimoto": full_tanimoto,
+            }
+        )
+        if save_to_file:
+            df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
+        return df
 
     @staticmethod
     def rho(atom, gc):
