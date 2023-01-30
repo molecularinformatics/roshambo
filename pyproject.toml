@@ -1,0 +1,12 @@
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+line_length = 88
+order_by_type = true
+length_sort = true
+lines_between_types = 1
+group_by_package = true
+force_alphabetical_sort_within_sections = true
+combine_straight_imports = true
+balanced_wrapping = true
