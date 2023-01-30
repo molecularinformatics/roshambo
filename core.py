@@ -25,6 +25,7 @@ class GetSimilarityScores:
         self.transformation_arrays = None
         self.rotation = np.array([])
         self.translation = np.array([])
+        self.transformed_molecules = []
 
     def run_paper(self, paper_cmd=None, gpu_id=0, cleanup=True):
         run_file = f"{self.working_dir}/runfile"
@@ -78,12 +79,18 @@ class GetSimilarityScores:
                 np.vstack((self.translation, t)) if self.translation.size else t
             )
 
-    def read_molecules(self):
+    def transform_molecules(self, write_to_file=False):
         # TODO: replace this since PAPER already reads molecules
-        pass
-
-    def transform_molecules(self):
-        pass
+        for file, rot, trans in zip(
+            self.dataset_files, self.rotation, self.translation
+        ):
+            mol = Molecule()
+            mol.read_from_molfile(file, opt=False, removeHs=False)
+            xyz_trans = mol.transform_mol(rot, trans)
+            mol.create_molecule(xyz_trans)
+            self.transformed_molecules.append(mol)
+            if write_to_file:
+                mol.write_molfile(f"{file.split('.')[0]}_trans.sdf")
 
     def calculate_similarity_scores(self):
         pass
