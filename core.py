@@ -117,6 +117,20 @@ class GetSimilarityScores:
             volume += ref_grid * fit_grid
         return volume * grid.res * grid.res * grid.res
 
+    def calculate_volume(self, grid, mol):
+        gcs = grid.converted_grid
+        volume = 0
+        mol_coords_radii = mol.get_atomic_coordinates_and_radii()
+        for gc in gcs:
+            mol_grid = np.prod(
+                [
+                    1 - self.rho(mol_coords_radii[i], gc)
+                    for i in range(len(mol_coords_radii))
+                ],
+                axis=0,
+            )
+            volume += 1 - mol_grid
+        return volume * grid.res**3
 
 
 
