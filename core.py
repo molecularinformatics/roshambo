@@ -14,6 +14,9 @@ from timeit import default_timer as timer
 
 from scipy.spatial.transform import Rotation
 
+from grid import Grid
+from structure import Molecule
+
 
 class GetSimilarityScores:
     def __init__(self, ref_file, dataset_files_pattern, working_dir=None):
@@ -132,6 +135,17 @@ class GetSimilarityScores:
             volume += 1 - mol_grid
         return volume * grid.res**3
 
+    def calculate_tanimoto(self, res=0.4, margin=0.4):
+        ref_grid = Grid(self.ref_mol, res=res, margin=margin)
+        ref_grid.create_grid()
+        ref_overlap = self._calculate_overlap_volume(
+            ref_grid, self.ref_mol, self.ref_mol
+        )
+        full_tanimoto = []
+        for fit_mol in self.transformed_molecules:
+            fit_grid = Grid(fit_mol, res=res, margin=margin)
+            fit_grid.create_grid()
+            fit_overlap = self._calculate_overlap_volume(fit_grid, fit_mol, fit_mol)
 
 
     @staticmethod
