@@ -24,18 +24,19 @@ class Molecule:
         )
         AllChem.UFFOptimizeMolecule(self.mol)
 
-    def get_xyz_from_mol(self):
-        xyz = np.zeros((self.mol.GetNumAtoms(), 3))
+    def get_atomic_coordinates_and_radii(self):
+        atoms = self.mol.GetAtoms()
+        coordinates_and_radii = []
         conf = self.mol.GetConformer()
-        for i in range(conf.GetNumAtoms()):
-            position = conf.GetAtomPosition(i)
-            xyz[i, 0] = position.x
-            xyz[i, 1] = position.y
-            xyz[i, 2] = position.z
-        return xyz
+        for i, j in enumerate(atoms):
+            pos = conf.GetAtomPosition(i)
+            coordinates_and_radii.append(
+                (pos.x, pos.y, pos.z, Chem.GetPeriodicTable().GetRvdw(j.GetAtomicNum()))
+            )
+        return np.array(coordinates_and_radii)
 
     def transform_mol(self, rot, trans):
-        xyz = self.get_xyz_from_mol()
+        xyz = self.get_atomic_coordinates_and_radii()[:, :3]
         r = R.from_quat(rot)
         xyz_trans = r.apply(xyz) + trans
         return xyz_trans
