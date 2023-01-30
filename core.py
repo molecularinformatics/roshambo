@@ -136,7 +136,7 @@ class GetSimilarityScores:
             volume += 1 - mol_grid
         return volume * grid.res**3
 
-    def calculate_tanimoto(self, res=0.4, margin=0.4):
+    def calculate_tanimoto(self, res=0.4, margin=0.4, save_to_file=False):
         ref_grid = Grid(self.ref_mol, res=res, margin=margin)
         ref_grid.create_grid()
         ref_overlap = self._calculate_overlap_volume(
@@ -163,6 +163,7 @@ class GetSimilarityScores:
                 "Tanimoto": full_tanimoto,
             }
         )
+        df.sort_values(by="Tanimoto", inplace=True)
         if save_to_file:
             df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
         return df
