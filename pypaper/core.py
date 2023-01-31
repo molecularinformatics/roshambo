@@ -77,10 +77,10 @@ class GetSimilarityScores:
         # Extract rotation matrix and translation vector from transformation matrix
         for arr in self.transformation_arrays:
             r = Rotation.from_dcm(arr[:3, :3]).as_quat()
-            self.rotation = np.vstack((self.rotation, r)) if self.rotation.size else r
+            self.rotation = np.vstack((self.rotation, r)) if self.rotation.size else r.reshape(1, 4)
             t = arr[:3, 3]
             self.translation = (
-                np.vstack((self.translation, t)) if self.translation.size else t
+                np.vstack((self.translation, t)) if self.translation.size else t.reshape(1, 3)
             )
 
     def transform_molecules(self, write_to_file=False):
