@@ -119,7 +119,7 @@ class GetSimilarityScores:
             )
             fit_grid = 1 - fit_grid
             volume += ref_grid * fit_grid
-        return volume * grid.res * grid.res * grid.res
+        return volume * grid.res**3
 
     def calculate_volume(self, grid, mol):
         gcs = grid.converted_grid
