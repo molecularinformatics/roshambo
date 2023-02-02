@@ -111,19 +111,19 @@ class GetSimilarityScores:
         # Extract rotation matrix and translation vector from transformation matrix
         for arr in self.transformation_arrays:
             r = Rotation.from_dcm(arr[:3, :3]).as_quat()
-            self.rotation = np.vstack((self.rotation, r)) if self.rotation.size else r.reshape(1, 4)
+            self.rotation = (
+                np.vstack((self.rotation, r)) if self.rotation.size else r.reshape(1, 4)
+            )
             t = arr[:3, 3]
             self.translation = (
-                np.vstack((self.translation, t)) if self.translation.size else t.reshape(1, 3)
+                np.vstack((self.translation, t))
+                if self.translation.size
+                else t.reshape(1, 3)
             )
 
     def transform_molecules(self, write_to_file=False):
         # TODO: replace this since PAPER already reads molecules
-        for file, rot, trans in zip(
-            self.dataset_files, self.rotation, self.translation
-        ):
-            mol = Molecule()
-            mol.read_from_molfile(file, opt=False, removeHs=False)
+        for mol, rot, trans in zip(self.dataset_mols, self.rotation, self.translation):
             xyz_trans = mol.transform_mol(rot, trans)
             mol.create_molecule(xyz_trans)
             self.transformed_molecules.append(mol)
