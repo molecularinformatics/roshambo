@@ -34,33 +34,50 @@ def convert_oeb_to_sdf(oeb_file, sdf_file, working_dir=None):
         oechem.OEThrow.Fatal(f"Unable to open {oeb_file}")
 
 
-def split_sdf_file(input_file, output_dir, max_mols_per_file=20):
+def split_sdf_file(input_file, output_dir, max_mols_per_file=20, cleanup=False):
     """
-    Split an sdf file into multiple files.
+    Split an sdf file into multiple files using RDKit.
 
     Args:
         input_file (str): input sdf file name.
         output_dir (str): output directory where the sdf file is saved.
         max_mols_per_file (int): maximum number of molecules per output file.
+        cleanup (bool): whether to delete the original sdf file; defaults to False.
 
     Returns:
-        None
+        output_files (list): list of output file paths
     """
-    suppl = Chem.ForwardSDMolSupplier(input_file, removeHs=False)
+    name = os.path.basename(input_file).split(".sdf")[0]
+    suppl = Chem.SDMolSupplier(input_file)
     count = 0
-    file_count = 0
-    w = Chem.SDWriter(f"{output_dir}/mol_{file_count}.sdf")
-
+    mol_count = 0
+    writer = None
+    output_files = []
+    mol_names = {}
     for mol in suppl:
         if mol is None:
             continue
-        w.write(mol)
-        count += 1
-        if count % max_mols_per_file == 0:
-            w.flush()
-            w.close()
-            file_count += 1
-            w = Chem.SDWriter(f"{output_dir}/mol_{file_count}.sdf")
-    w.flush()
-    w.close()
-
+        if mol_count % max_mols_per_file == 0:
+            if writer is not None:
+                writer.close()
+            count += 1
+            if max_mols_per_file == 1:
+                file_name = mol.GetProp("_Name")
+                if file_name in mol_names:
+                    mol_names[file_name] += 1
+                else:
+                    mol_names[file_name] = 0
+                file_name = f"{file_name}_{mol_names[file_name]}"
+            else:
+                file_name = f"{name}_{count}"
+            mol.SetProp("_Name", file_name)
+            file_path = f"{output_dir}/{file_name}.sdf"
+            writer = Chem.SDWriter(f"{output_dir}/{file_name}.sdf")
+            output_files.append(file_path)
+        writer.write(mol)
+        mol_count += 1
+    if writer is not None:
+        writer.close()
+    if cleanup:
+        os.remove(input_file)
+    return output_files
