@@ -1,7 +1,11 @@
 import os
 
 from rdkit import Chem
-from openeye import oechem
+
+try:
+    from openeye import oechem
+except ImportError:
+    pass
 
 
 def convert_oeb_to_sdf(oeb_file, sdf_file, working_dir=None):
