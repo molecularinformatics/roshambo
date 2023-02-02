@@ -41,6 +41,25 @@ class Molecule:
         xyz_trans = r.apply(xyz) + trans
         return xyz_trans
 
+    def project_mol(self):
+        xyz = self.get_atomic_coordinates_and_radii()[:, :3]
+        u, s, vh = np.linalg.svd(xyz)
+        if np.linalg.det(vh) < 0:
+            vh = -vh
+        new_xyz = np.dot(xyz, vh.T)
+        self.create_molecule(new_xyz)
+
+    def center_mol(self):
+        centroid = np.zeros((1, 3))
+        count = 0
+        xyz = self.get_atomic_coordinates_and_radii()[:, :3]
+        for atom in xyz:
+            centroid = centroid + atom
+            count += 1
+        centroid = centroid / count
+        new_xyz = xyz - centroid
+        self.create_molecule(new_xyz)
+
     def create_molecule(self, coords):
         conf = self.mol.GetConformer()
         for i in range(self.mol.GetNumAtoms()):
