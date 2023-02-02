@@ -10,9 +10,12 @@ from rdkit.Geometry import Point3D
 class Molecule:
     def __init__(self):
         self.mol = None
+        self.name = None
 
     def read_from_molfile(self, mol_file, opt=True, removeHs=False):
         self.mol = Chem.MolFromMolFile(mol_file, removeHs=removeHs)
+        # TODO: test this on xyz or pdb or other file types
+        self.name = self.mol.GetProp("_Name")
         if opt:
             self.optimize_mol()
 
