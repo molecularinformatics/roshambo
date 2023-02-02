@@ -94,32 +94,46 @@ class GetSimilarityScores:
             mol.create_molecule(xyz_trans)
             self.transformed_molecules.append(mol)
             if write_to_file:
-                mol.write_molfile(f"{file.split('.')[0]}_trans.sdf")
+                mol.write_molfile(f"{self.working_dir}/{mol.name}.sdf")
+
+    # def _calculate_overlap_volume(self, grid, ref_mol, fit_mol):
+    #     gcs = grid.converted_grid
+    #     volume = 0
+    #     ref_mol_coords_radii = ref_mol.get_atomic_coordinates_and_radii()
+    #     fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii()
+    #     for gc in gcs:
+    #         ref_grid = np.prod(
+    #             [
+    #                 1 - self.rho(ref_mol_coords_radii[i], gc)
+    #                 for i in range(len(ref_mol_coords_radii))
+    #             ],
+    #             axis=0,
+    #         )
+    #         ref_grid = 1 - ref_grid
+    #         fit_grid = np.prod(
+    #             [
+    #                 1 - self.rho(fit_mol_coords_radii[i], gc)
+    #                 for i in range(len(fit_mol_coords_radii))
+    #             ],
+    #             axis=0,
+    #         )
+    #         fit_grid = 1 - fit_grid
+    #         volume += ref_grid * fit_grid
+    #     return volume * grid.res**3
 
     def _calculate_overlap_volume(self, grid, ref_mol, fit_mol):
         gcs = grid.converted_grid
-        volume = 0
         ref_mol_coords_radii = ref_mol.get_atomic_coordinates_and_radii()
         fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii()
-        for gc in gcs:
-            ref_grid = np.prod(
-                [
-                    1 - self.rho(ref_mol_coords_radii[i], gc)
-                    for i in range(len(ref_mol_coords_radii))
-                ],
-                axis=0,
-            )
-            ref_grid = 1 - ref_grid
-            fit_grid = np.prod(
-                [
-                    1 - self.rho(fit_mol_coords_radii[i], gc)
-                    for i in range(len(fit_mol_coords_radii))
-                ],
-                axis=0,
-            )
-            fit_grid = 1 - fit_grid
-            volume += ref_grid * fit_grid
-        return volume * grid.res**3
+
+        rho_ref = self.rho(ref_mol_coords_radii[:, np.newaxis], gcs)
+        ref_grid = 1 - np.prod(1 - rho_ref, axis=1)
+
+        rho_fit = self.rho(fit_mol_coords_radii[:, np.newaxis], gcs)
+        fit_grid = 1 - np.prod(1 - rho_fit, axis=1)
+
+        volume = np.sum(ref_grid * fit_grid) * grid.res**3
+        return volume
 
     def calculate_volume(self, grid, mol):
         gcs = grid.converted_grid
@@ -169,10 +183,11 @@ class GetSimilarityScores:
         return df
 
     @staticmethod
-    def rho(atom, gc):
+    def rho(atoms, gcs):
         rt22 = 2.82842712475
         partialalpha = -2.41798793102
-        alpha = partialalpha / (atom[3] ** 2)
-        diff = gc - atom[:3]
-        r2 = np.dot(diff, diff)
-        return rt22 * np.exp(alpha * r2)
+        alphas = partialalpha / (atoms[:, 0, 3] ** 2)
+        diffs = gcs[:, np.newaxis, :] - atoms[:, 0, :3]
+        r2s = np.sum(diffs * diffs, axis=-1)
+        rhos = rt22 * np.exp(alphas[np.newaxis, :] * r2s)
+        return rhos
