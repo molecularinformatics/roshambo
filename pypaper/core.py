@@ -17,15 +17,40 @@ from scipy.spatial.transform import Rotation
 
 from grid import Grid
 from structure import Molecule
+from utilities import split_sdf_file
 
 
 class GetSimilarityScores:
-    def __init__(self, ref_file, dataset_files_pattern, working_dir=None):
+    def __init__(
+        self,
+        ref_file,
+        dataset_files_pattern,
+        split_dataset_files=False,
+        opt=False,
+        removeHs=False,
+        working_dir=None,
+    ):
         self.working_dir = working_dir or os.getcwd()
         self.ref_file = f"{self.working_dir}/{ref_file}"
-        self.ref_mol = Molecule()
-        self.ref_mol.read_from_molfile(self.ref_file, opt=False, removeHs=False)
         self.dataset_files = glob.glob(f"{self.working_dir}/{dataset_files_pattern}")
+
+        # TODO: this only works if the input is an sdf file, what about other mol format?
+        if split_dataset_files:
+            assert len(self.dataset_files) == 1
+            self.dataset_files = split_sdf_file(
+                self.dataset_files[0],
+                output_dir=self.working_dir,
+                max_mols_per_file=1,
+                cleanup=True,
+            )
+
+        # TODO:Check if saving all molecules into numpy arrays will cause memory leaks
+        self.ref_mol = self._process_molecule(self.ref_file, opt=opt, removeHs=removeHs)
+        self.dataset_mols = [
+            self._process_molecule(file, opt=opt, removeHs=removeHs)
+            for file in self.dataset_files
+        ]
+
         self.transformation_arrays = None
         self.rotation = np.array([])
         self.translation = np.array([])
