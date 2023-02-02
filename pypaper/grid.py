@@ -22,8 +22,9 @@ class Grid:
         return lb, ub
 
     def convert_grid_to_real(self, lb, coords):
-        grid_coords = np.array([x + 0.5 for x in coords])
-        return lb + grid_coords * self.res
+        grid_coords = np.array(coords) + 0.5
+        real_coords = lb + grid_coords * self.res
+        return real_coords
 
     def create_grid(self):
         lb, ub = self.get_bounding_box()
