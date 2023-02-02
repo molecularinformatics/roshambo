@@ -216,6 +216,15 @@ class GetSimilarityScores:
             df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
         return df
 
+    # @staticmethod
+    # def rho(atom, gc):
+    #     rt22 = 2.82842712475
+    #     partialalpha = -2.41798793102
+    #     alpha = partialalpha / (atom[3] ** 2)
+    #     diff = gc - atom[:3]
+    #     r2 = np.dot(diff, diff)
+    #     return rt22 * np.exp(alpha * r2)
+
     @staticmethod
     def rho(atoms, gcs):
         rt22 = 2.82842712475
