@@ -56,6 +56,15 @@ class GetSimilarityScores:
         self.translation = np.array([])
         self.transformed_molecules = []
 
+    @staticmethod
+    def _process_molecule(file, opt=False, removeHs=False):
+        mol = Molecule()
+        mol.read_from_molfile(file, opt=opt, removeHs=removeHs)
+        mol.center_mol()
+        mol.project_mol()
+        mol.write_molfile(file)
+        return mol
+
     def run_paper(self, paper_cmd=None, gpu_id=0, cleanup=True):
         run_file = f"{self.working_dir}/runfile"
         with open(run_file, "w") as f:
