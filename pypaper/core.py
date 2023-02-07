@@ -75,7 +75,7 @@ class GetSimilarityScores:
         # TODO: include a case where the run_file is provided as input
         if not paper_cmd:
             cfg = ConfigParser()
-            cfg.read("../config/config.ini")
+            cfg.read(os.environ.get("CONFIG_FILE_PATH", "../config/config.ini"))
             cmd = cfg["RunPAPER"]["paper_cmd"]
             paper_cmd = cmd.replace("$gpu_id$", str(gpu_id)).replace(
                 "$run_file$", run_file
