@@ -160,7 +160,6 @@ class GetSimilarityScores:
             volume += 1 - mol_grid
         return volume * grid.res**3
 
-
     @staticmethod
     def _calculate_tanimoto(
         fit_mol, res, margin, calculate_overlap_volume, ref_grid, ref_mol, ref_overlap
@@ -199,7 +198,7 @@ class GetSimilarityScores:
             )
             for fit_mol in self.transformed_molecules
         ]
-        print(cpu_count())
+
         with Pool(processes=cpu_count()) as pool:
             full_tanimoto = pool.starmap(self._calculate_tanimoto, inputs)
 
