@@ -174,9 +174,6 @@ class GetSimilarityScores:
             ref_mol,
             fit_mol,
         )
-        print(fit_overlap)
-        print(fit_overlap)
-        print(ref_fit_overlap)
         tanimoto = ref_fit_overlap / (ref_overlap + fit_overlap - ref_fit_overlap)
         return tanimoto
 
