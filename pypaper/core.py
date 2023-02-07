@@ -15,9 +15,9 @@ from timeit import default_timer as timer
 
 from scipy.spatial.transform import Rotation
 
-from grid import Grid
-from structure import Molecule
-from utilities import split_sdf_file
+from pypaper.grid import Grid
+from pypaper.structure import Molecule
+from pypaper.utilities import split_sdf_file
 
 
 class GetSimilarityScores:
