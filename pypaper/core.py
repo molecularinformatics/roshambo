@@ -110,7 +110,7 @@ class GetSimilarityScores:
     def convert_transformation_arrays(self):
         # Extract rotation matrix and translation vector from transformation matrix
         for arr in self.transformation_arrays:
-            r = Rotation.from_dcm(arr[:3, :3]).as_quat()
+            r = Rotation.from_matrix(arr[:3, :3]).as_quat()
             self.rotation = (
                 np.vstack((self.rotation, r)) if self.rotation.size else r.reshape(1, 4)
             )
