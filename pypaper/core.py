@@ -12,6 +12,7 @@ import pandas as pd
 
 from configparser import ConfigParser
 from timeit import default_timer as timer
+from multiprocessing import Pool, cpu_count
 
 from scipy.spatial.transform import Rotation
 
@@ -184,37 +185,92 @@ class GetSimilarityScores:
             volume += 1 - mol_grid
         return volume * grid.res**3
 
+    # def calculate_tanimoto(self, res=0.4, margin=0.4, save_to_file=False):
+    #     ref_grid = Grid(self.ref_mol, res=res, margin=margin)
+    #     ref_grid.create_grid()
+    #     ref_overlap = self._calculate_overlap_volume(
+    #         ref_grid, self.ref_mol, self.ref_mol
+    #     )
+    #     full_tanimoto = []
+    #     for fit_mol in self.transformed_molecules:
+    #         fit_grid = Grid(fit_mol, res=res, margin=margin)
+    #         fit_grid.create_grid()
+    #         fit_overlap = self._calculate_overlap_volume(fit_grid, fit_mol, fit_mol)
+    #
+    #         ref_fit_overlap = self._calculate_overlap_volume(
+    #             ref_grid
+    #             if np.prod(ref_grid.extent) < np.prod(fit_grid.extent)
+    #             else fit_grid,
+    #             self.ref_mol,
+    #             fit_mol,
+    #         )
+    #         tanimoto = ref_fit_overlap / (ref_overlap + fit_overlap - ref_fit_overlap)
+    #         full_tanimoto.append(tanimoto)
+    #     df = pd.DataFrame(
+    #         {
+    #             "Molecule": [os.path.basename(path) for path in self.dataset_files],
+    #             "Tanimoto": full_tanimoto,
+    #         }
+    #     )
+    #     df.sort_values(by="Tanimoto", ascending=False, inplace=True)
+    #     if save_to_file:
+    #         df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
+    #     return df
+
+    @staticmethod
+    def _calculate_tanimoto(
+        fit_mol, res, margin, calculate_overlap_volume, ref_grid, ref_mol, ref_overlap
+    ):
+        fit_grid = Grid(fit_mol, res=res, margin=margin)
+        fit_grid.create_grid()
+        fit_overlap = calculate_overlap_volume(fit_grid, fit_mol, fit_mol)
+        ref_fit_overlap = calculate_overlap_volume(
+            ref_grid
+            if np.prod(ref_grid.extent) < np.prod(fit_grid.extent)
+            else fit_grid,
+            ref_mol,
+            fit_mol,
+        )
+        print(fit_overlap)
+        print(fit_overlap)
+        print(ref_fit_overlap)
+        tanimoto = ref_fit_overlap / (ref_overlap + fit_overlap - ref_fit_overlap)
+        return tanimoto
+
     def calculate_tanimoto(self, res=0.4, margin=0.4, save_to_file=False):
         ref_grid = Grid(self.ref_mol, res=res, margin=margin)
         ref_grid.create_grid()
         ref_overlap = self._calculate_overlap_volume(
             ref_grid, self.ref_mol, self.ref_mol
         )
-        full_tanimoto = []
-        for fit_mol in self.transformed_molecules:
-            fit_grid = Grid(fit_mol, res=res, margin=margin)
-            fit_grid.create_grid()
-            fit_overlap = self._calculate_overlap_volume(fit_grid, fit_mol, fit_mol)
-
-            ref_fit_overlap = self._calculate_overlap_volume(
-                ref_grid
-                if np.prod(ref_grid.extent) < np.prod(fit_grid.extent)
-                else fit_grid,
-                self.ref_mol,
+        inputs = [
+            (
                 fit_mol,
+                res,
+                margin,
+                self._calculate_overlap_volume,
+                ref_grid,
+                self.ref_mol,
+                ref_overlap,
             )
-            tanimoto = ref_fit_overlap / (ref_overlap + fit_overlap - ref_fit_overlap)
-            full_tanimoto.append(tanimoto)
+            for fit_mol in self.transformed_molecules
+        ]
+        print(cpu_count())
+        with Pool(processes=cpu_count()) as pool:
+            full_tanimoto = pool.starmap(self._calculate_tanimoto, inputs)
+
         df = pd.DataFrame(
             {
-                "Molecule": [os.path.basename(path) for path in self.dataset_files],
+                "Molecule": [
+                    os.path.basename(path).split(".")[0] for path in self.dataset_files
+                ],
                 "Tanimoto": full_tanimoto,
             }
         )
         df.sort_values(by="Tanimoto", ascending=False, inplace=True)
         if save_to_file:
             df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
-        return df
+        return full_tanimoto
 
     # @staticmethod
     # def rho(atom, gc):
