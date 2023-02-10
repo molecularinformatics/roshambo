@@ -59,8 +59,8 @@ class GetSimilarityScores:
 
     @staticmethod
     def _process_molecule(file, opt=False, removeHs=False):
-        mol = Molecule()
-        mol.read_from_molfile(file, opt=opt, removeHs=removeHs)
+        mol = Molecule(file, opt=opt, removeHs=removeHs)
+        # mol.read_from_molfile(file, opt=opt, removeHs=removeHs)
         mol.center_mol()
         mol.project_mol()
         mol.write_molfile(file)
