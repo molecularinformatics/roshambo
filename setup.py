@@ -16,6 +16,7 @@ setuptools.setup(
     install_requires=[
         "numpy",
         "pandas",
+        "cython"
     ],
     packages=setuptools.find_packages(),
     classifiers=[
@@ -26,6 +27,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.5",
     package_data={},
+    # ext_modules=cythonize(ext),
 )
