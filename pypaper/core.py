@@ -16,6 +16,8 @@ from multiprocessing import Pool, cpu_count
 
 from scipy.spatial.transform import Rotation
 
+from rdkit import Chem
+
 from pypaper.grid import Grid
 from pypaper.structure import Molecule
 from pypaper.utilities import split_sdf_file
@@ -59,8 +61,8 @@ class GetSimilarityScores:
 
     @staticmethod
     def _process_molecule(file, opt=False, removeHs=False):
-        mol = Molecule(file, opt=opt, removeHs=removeHs)
-        # mol.read_from_molfile(file, opt=opt, removeHs=removeHs)
+        rdkit_mol = Chem.MolFromMolFile(file, removeHs=removeHs)
+        mol = Molecule(rdkit_mol, opt=opt)
         mol.center_mol()
         mol.project_mol()
         mol.write_molfile(file)
