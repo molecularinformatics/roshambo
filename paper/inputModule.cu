@@ -948,117 +948,122 @@ list<struct transform> initializeStartingPoints(CUDAmol fitmol,CUDAmol refmol,co
 
 } //}}}
 
-extern "C" void loadMolecules(int argc,char** argv,
-                              CUDAmol** fitmols,CUDAmol& refmol,uint** molids,float** transforms,size_t& transform_pitch,
-                              dCUDAMultimol& hostFitMM,dCUDAMultimol& devFitMM,
-                              dCUDAMultimol& hostRefMM,dCUDAMultimol& devRefMM,
-                              float3& com_ref,float3** com_fit,
-                              uint& totalMols,uint& distinctMols) 
-{
-    string refmolfile;
-    list<string> fitmolfiles;
-    if (argc > 2) {
-        refmolfile = string(argv[1]);
-        // Molecules were listed on the command line
-        for (int i = 2; i < argc; i++) 
-            fitmolfiles.push_back(string(argv[i]));
-    } else {
-        // Command line just had a file parameter; molecules listed in there.
-        bool isref = true;
-        FILE* listfile = fopen(argv[1],"rt");
-        if (!listfile) {
-            printf("Error: could not open file %s\n",argv[1]);
-            exit(1);
-        }
-        char buf[1025];
-        while (!feof(listfile)) {
-            // Add some test code for eof
-            int ch = fgetc(listfile);
-            if (ch != EOF) {
-                ungetc(ch,listfile);
-            } else break;
-
-            fgets(buf,1024,listfile);
-            // Nuke the newline
-            char* nl = strchr(buf,'\n');
-            if (nl)
-                *nl = '\0';
-            if (isref) {
-                refmolfile = string(buf);
-                isref = false;
-            } else {
-                //printf("Adding fit molecule file %s\n",buf);
-                fitmolfiles.push_back(string(buf));
-            }
-        }
-        fclose(listfile);
-    }
-    
-    // Here we have the reference molecule file name in refmolfile
-    // And the fit molecules in fitmolfiles
-    if (fitmolfiles.empty()) {
-        printf("Error - no fit molecules specified!\n");
-        exit(2);
-    }
-
-    list<molAndTransform*> molxfList;
-
-    // This section will need to be changed for multiconformer references
-    list<CUDAmol> cmolConformers;
-    list<dCUDAmol> dcmolConformers;
-    list<list<float3> > ringCentroids;
-    molFromFile(refmolfile,cmolConformers,dcmolConformers,ringCentroids);
-
-    refmol = cmolConformers.front();
-    cmolConformers.pop_front();
-    com_ref = centerOfMass(refmol);
-    remove_com(refmol,com_ref);
-    
-    dCUDAmol refdmol = dcmolConformers.front();
-    dcmolConformers.pop_front();
-    remove_com(refdmol,com_ref);
-    
-    dCUDAmolToMultimol(refdmol,hostRefMM,devRefMM);
-    delete[] refdmol.x; delete[] refdmol.y; delete[] refdmol.z; delete[] refdmol.a;
-    list<float3> refmolRingCentroids;
-    // Add a com_ref-compensated centroid to the list of ring centroids for each one found
-    for (list<float3>::iterator i = ringCentroids.front().begin(); i != ringCentroids.front().end(); i++) {
-        refmolRingCentroids.push_back(*i - com_ref);
-    }
-    ringCentroids.pop_front();
-    // Done setting up the reference molecules
-    
-    totalMols = 0;
-    distinctMols = fitmolfiles.size();
-    uint molid=0;
-    for (list<string>::iterator iter = fitmolfiles.begin(); iter != fitmolfiles.end(); iter++,molid++) {
-        list<molAndTransform*> molStarts = molFileToMolAndStarts(*iter,molid,refmol,refmolRingCentroids);
-        totalMols += molStarts.size();
-        molxfList.splice(molxfList.end(),molStarts);
-    }
-
-    // Load up the centers of mass and molecule ids for the host
-    (*com_fit) =  (float3*)malloc(totalMols*sizeof(float3));
-    (*molids)  =  (uint*)malloc(totalMols*sizeof(uint));
-    uint i = 0;
-    for (list<molAndTransform*>::iterator iter = molxfList.begin(); iter != molxfList.end(); iter++,i++) {
-        (*com_fit)[i] = (*iter)->com;
-        (*molids)[i] = (*iter)->molid;
-    }
-
-    molxfsTodcMMs(molxfList,hostFitMM,devFitMM);
-    transform_pitch = hostFitMM.transform_pitch;
-    (*transforms) = (float*)malloc(totalMols*transform_pitch*sizeof(float));
-    memcpy(*transforms,hostFitMM.transforms,totalMols*transform_pitch*sizeof(float));
-    molxfsTocMMs(molxfList,fitmols);
-
-    
-    // Clean up the elements in the list
-    for (list<molAndTransform*>::iterator iter = molxfList.begin(); iter != molxfList.end();iter++) {
-        delete (*iter);
-    }
-
-}
+// extern "C" void loadMolecules(int num_molfiles,list<string> molfiles,
+//                               CUDAmol** fitmols,CUDAmol& refmol,uint** molids,float** transforms,size_t& transform_pitch,
+//                               dCUDAMultimol& hostFitMM,dCUDAMultimol& devFitMM,
+//                               dCUDAMultimol& hostRefMM,dCUDAMultimol& devRefMM,
+//                               float3& com_ref,float3** com_fit,
+//                               uint& totalMols,uint& distinctMols)
+// {
+//     string refmolfile;
+//     list<string> fitmolfiles;
+//     if (num_molfiles > 1) {
+//         refmolfile = string(molfiles.front());
+//         list<string>::iterator it = molfiles.begin();
+//         std::advance(it, 1);
+//         for (; it != molfiles.end(); ++it)
+//         {
+//             fitmolfiles.push_back(*it);
+//         }
+//     } else {
+//         // Command line just had a file parameter; molecules listed in there.
+//         bool isref = true;
+//         string runfile;
+//         runfile = string(molfiles.front());
+//         FILE* listfile = fopen(runfile.c_str(),"rt");
+//         if (!listfile) {
+//             printf("Error: could not open file %s\n",runfile.c_str());
+//             exit(1);
+//         }
+//         char buf[1025];
+//         while (!feof(listfile)) {
+//             // Add some test code for eof
+//             int ch = fgetc(listfile);
+//             if (ch != EOF) {
+//                 ungetc(ch,listfile);
+//             } else break;
+//
+//             fgets(buf,1024,listfile);
+//             // Nuke the newline
+//             char* nl = strchr(buf,'\n');
+//             if (nl)
+//                 *nl = '\0';
+//             if (isref) {
+//                 refmolfile = string(buf);
+//                 isref = false;
+//             } else {
+//                 //printf("Adding fit molecule file %s\n",buf);
+//                 fitmolfiles.push_back(string(buf));
+//             }
+//         }
+//         fclose(listfile);
+//     }
+//
+//     // Here we have the reference molecule file name in refmolfile
+//     // And the fit molecules in fitmolfiles
+//     if (fitmolfiles.empty()) {
+//         printf("Error - no fit molecules specified!\n");
+//         exit(2);
+//     }
+//
+//     list<molAndTransform*> molxfList;
+//
+//     // This section will need to be changed for multiconformer references
+//     list<CUDAmol> cmolConformers;
+//     list<dCUDAmol> dcmolConformers;
+//     list<list<float3> > ringCentroids;
+//     molFromFile(refmolfile,cmolConformers,dcmolConformers,ringCentroids);
+//
+//     refmol = cmolConformers.front();
+//     cmolConformers.pop_front();
+//     com_ref = centerOfMass(refmol);
+//     remove_com(refmol,com_ref);
+//
+//     dCUDAmol refdmol = dcmolConformers.front();
+//     dcmolConformers.pop_front();
+//     remove_com(refdmol,com_ref);
+//
+//     dCUDAmolToMultimol(refdmol,hostRefMM,devRefMM);
+//     delete[] refdmol.x; delete[] refdmol.y; delete[] refdmol.z; delete[] refdmol.a;
+//     list<float3> refmolRingCentroids;
+//     // Add a com_ref-compensated centroid to the list of ring centroids for each one found
+//     for (list<float3>::iterator i = ringCentroids.front().begin(); i != ringCentroids.front().end(); i++) {
+//         refmolRingCentroids.push_back(*i - com_ref);
+//     }
+//     ringCentroids.pop_front();
+//     // Done setting up the reference molecules
+//
+//     totalMols = 0;
+//     distinctMols = fitmolfiles.size();
+//     uint molid=0;
+//     for (list<string>::iterator iter = fitmolfiles.begin(); iter != fitmolfiles.end(); iter++,molid++) {
+//         list<molAndTransform*> molStarts = molFileToMolAndStarts(*iter,molid,refmol,refmolRingCentroids);
+//         totalMols += molStarts.size();
+//         molxfList.splice(molxfList.end(),molStarts);
+//     }
+//
+//     // Load up the centers of mass and molecule ids for the host
+//     (*com_fit) =  (float3*)malloc(totalMols*sizeof(float3));
+//     (*molids)  =  (uint*)malloc(totalMols*sizeof(uint));
+//     uint i = 0;
+//     for (list<molAndTransform*>::iterator iter = molxfList.begin(); iter != molxfList.end(); iter++,i++) {
+//         (*com_fit)[i] = (*iter)->com;
+//         (*molids)[i] = (*iter)->molid;
+//     }
+//
+//     molxfsTodcMMs(molxfList,hostFitMM,devFitMM);
+//     transform_pitch = hostFitMM.transform_pitch;
+//     (*transforms) = (float*)malloc(totalMols*transform_pitch*sizeof(float));
+//     memcpy(*transforms,hostFitMM.transforms,totalMols*transform_pitch*sizeof(float));
+//     molxfsTocMMs(molxfList,fitmols);
+//
+//
+//     // Clean up the elements in the list
+//     for (list<molAndTransform*>::iterator iter = molxfList.begin(); iter != molxfList.end();iter++) {
+//         delete (*iter);
+//     }
+//
+// }
 
 extern "C" void loadMoleculesRDKit(int num_mols,list<RDKit::ROMol*>& molecules,
                                    CUDAmol** fitmols,CUDAmol& refmol,uint** molids,float** transforms,size_t& transform_pitch,
