@@ -1,10 +1,10 @@
 /*
  * paper.cu
  * Main program file for PAPER
- *   - loads files from disk using inputModule 
+ *   - loads files from disk using inputModule
  *   - optimizes overlap with deviceOverlay
  *   - outputs transformation matrices for max overlap
- *  
+ *
  * Author: Imran Haque, 2010
  * Copyright 2009-2010, Stanford University
  *
@@ -14,6 +14,8 @@
  *
  */
 #include <stdio.h>
+#include <list>
+#include <fstream>
 #include <string.h>
 #include <stdlib.h>
 #include "inputModule.h"
@@ -23,6 +25,10 @@
 #include "deviceOverlay.h"
 #include "transformTools.h"
 #include <sys/time.h>
+#include <cuda_runtime.h>
+#include <GraphMol/FileParsers/FileParsers.h>
+
+using namespace std;
 
 #define ELTS7(x) x[0],x[1],x[2],x[3],x[4],x[5],x[6]
 
@@ -40,7 +46,6 @@ extern "C" int paper_main(int gpuID, list<RDKit::ROMol*>& molecules) {
     cudaSetDevice(gpuID);
     fprintf(stderr,"# Executing on GPU %d\n",gpuID);
 
-    //printf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
     // Load reference and fit molecules from disk into CUDAmols and dCUDAMultimols {{{
     CUDAmol refmol;
     CUDAmol* fitmols;
