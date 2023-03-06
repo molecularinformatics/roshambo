@@ -1018,3 +1018,88 @@ extern "C" void loadMolecules(int argc,char** argv,
 
 }
 
+extern "C" void loadMoleculesRDKit(int num_mols,list<RDKit::ROMol*>& molecules,
+                                   CUDAmol** fitmols,CUDAmol& refmol,uint** molids,float** transforms,size_t& transform_pitch,
+                                   dCUDAMultimol& hostFitMM,dCUDAMultimol& devFitMM,
+                                   dCUDAMultimol& hostRefMM,dCUDAMultimol& devRefMM,
+                                   float3& com_ref,float3** com_fit,
+                                   uint& totalMols,uint& distinctMols)
+{
+    if (num_mols < 2) {
+        std::cerr << "Error: not enough molecules are specified." << std::endl;
+        return;
+    }
+    RDKit::ROMol* refrdmol;
+    list<RDKit::ROMol*> fitrdmols;
+    refrdmol = molecules.front();
+    list<RDKit::ROMol*>::iterator it = molecules.begin();
+    std::advance(it, 1);
+    for (; it != molecules.end(); ++it)
+    {
+        fitrdmols.push_back(*it);
+    }
+    // Here we have the reference molecule in refrdmol
+    // And the fit molecules in fitrdmols
+    if (fitrdmols.empty()) {
+        printf("Error - no fit molecules specified!\n");
+        exit(2);
+    }
+    list<molAndTransform*> molxfList;
+
+    // This section will need to be changed for multiconformer references
+    list<CUDAmol> cmolConformers;
+    list<dCUDAmol> dcmolConformers;
+    list<list<float3> > ringCentroids;
+    mol_from_rdkit(refrdmol,cmolConformers,dcmolConformers,ringCentroids);
+
+    refmol = cmolConformers.front();
+    cmolConformers.pop_front();
+    com_ref = centerOfMass(refmol);
+    remove_com(refmol,com_ref);
+
+    dCUDAmol refdmol = dcmolConformers.front();
+    dcmolConformers.pop_front();
+    remove_com(refdmol,com_ref);
+
+    dCUDAmolToMultimol(refdmol,hostRefMM,devRefMM);
+    delete[] refdmol.x; delete[] refdmol.y; delete[] refdmol.z; delete[] refdmol.a;
+    list<float3> refmolRingCentroids;
+    // Add a com_ref-compensated centroid to the list of ring centroids for each one found
+    for (list<float3>::iterator i = ringCentroids.front().begin(); i != ringCentroids.front().end(); i++) {
+        refmolRingCentroids.push_back(*i - com_ref);
+    }
+    ringCentroids.pop_front();
+    // Done setting up the reference molecules
+
+    totalMols = 0;
+    distinctMols = fitrdmols.size();
+    uint molid=0;
+    for (list<RDKit::ROMol*>::iterator iter = fitrdmols.begin(); iter != fitrdmols.end(); iter++,molid++) {
+        list<molAndTransform*> molStarts = rdmolToMolAndStarts(*iter,molid,refmol,refmolRingCentroids);
+        totalMols += molStarts.size();
+        molxfList.splice(molxfList.end(),molStarts);
+    }
+
+    // Load up the centers of mass and molecule ids for the host
+    (*com_fit) =  (float3*)malloc(totalMols*sizeof(float3));
+    (*molids)  =  (uint*)malloc(totalMols*sizeof(uint));
+    uint i = 0;
+    for (list<molAndTransform*>::iterator iter = molxfList.begin(); iter != molxfList.end(); iter++,i++) {
+        (*com_fit)[i] = (*iter)->com;
+        (*molids)[i] = (*iter)->molid;
+    }
+
+    molxfsTodcMMs(molxfList,hostFitMM,devFitMM);
+    transform_pitch = hostFitMM.transform_pitch;
+    (*transforms) = (float*)malloc(totalMols*transform_pitch*sizeof(float));
+    memcpy(*transforms,hostFitMM.transforms,totalMols*transform_pitch*sizeof(float));
+    molxfsTocMMs(molxfList,fitmols);
+
+
+    // Clean up the elements in the list
+    for (list<molAndTransform*>::iterator iter = molxfList.begin(); iter != molxfList.end();iter++) {
+        delete (*iter);
+    }
+
+}
+
