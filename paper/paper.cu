@@ -39,7 +39,7 @@ double getustime(void) { // {{{
     return t;
 } //}}}
 
-extern "C" int paper_main(int gpuID, list<RDKit::ROMol*>& molecules) {
+extern "C" int paper(int gpuID, list<RDKit::ROMol*>& molecules) {
     int num_mols = 0;
     num_mols = molecules.size();
 
@@ -234,7 +234,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    int result = paper_main(gpuID, molecules);
+    int result = paper(gpuID, molecules);
 
     for (auto mol : molecules) {
         delete mol;
