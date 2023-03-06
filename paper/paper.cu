@@ -40,9 +40,7 @@ extern "C" int paper_main(int gpuID, list<RDKit::ROMol*>& molecules) {
     cudaSetDevice(gpuID);
     fprintf(stderr,"# Executing on GPU %d\n",gpuID);
 
-
     //printf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-
     // Load reference and fit molecules from disk into CUDAmols and dCUDAMultimols {{{
     CUDAmol refmol;
     CUDAmol* fitmols;
@@ -59,18 +57,17 @@ extern "C" int paper_main(int gpuID, list<RDKit::ROMol*>& molecules) {
                          com_ref,&com_fit,
                          totalMols,distinctMols);
     uint nfitmols = totalMols;
-    
     //printf("Loaded %d distinct fit molecules, with %d total fit molecules\n",distinctMols,totalMols);
     //printf("Ref molecule: %d atoms\n",refmol.natoms);
     //uint lastid=totalMols+1;
     //for (uint i = 0; i < totalMols; i++) {
-        //if (molids[i] != lastid)
-        //    printf("Fit molecule %d (id = %d): %d atoms\n",i,molids[i],fitmols[i].natoms);
-        //printf("\tTransform = [%f,%f,%f,%f,%f,%f,%f]\n",ELTS7((hostFitMM.transforms+i*hostFitMM.transform_pitch)));
-        //float* matrix = transformToCompensatedMatrix(hostFitMM.transforms+i*hostFitMM.transform_pitch,com_ref,com_fit[i]);
-        //printTransformMatrix(matrix);
-        //free(matrix);
-        //lastid=molids[i];
+    //if (molids[i] != lastid)
+    //    printf("Fit molecule %d (id = %d): %d atoms\n",i,molids[i],fitmols[i].natoms);
+    //printf("\tTransform = [%f,%f,%f,%f,%f,%f,%f]\n",ELTS7((hostFitMM.transforms+i*hostFitMM.transform_pitch)));
+    //float* matrix = transformToCompensatedMatrix(hostFitMM.transforms+i*hostFitMM.transform_pitch,com_ref,com_fit[i]);
+    //printTransformMatrix(matrix);
+    //free(matrix);
+    //lastid=molids[i];
     //}
 
     /*for (uint i = 0; i < hostFitMM.maxatoms; i++) {
@@ -78,7 +75,7 @@ extern "C" int paper_main(int gpuID, list<RDKit::ROMol*>& molecules) {
     }*/
     //}}}
 
-    
+
     float* hostDeviceOverlaps = (float*)malloc(nfitmols*sizeof(float));
 
     // Allocate space for numTimers on-GPU timers per molecule
@@ -88,17 +85,15 @@ extern "C" int paper_main(int gpuID, list<RDKit::ROMol*>& molecules) {
 
     float* hostDeviceTransforms = (float*)malloc(nfitmols*devFitMM.transform_pitch*sizeof(float));
 
-
     // optimize the overlaps
     double optstart = getustime();
     const int itercount = optimize_sepkernels(devFitMM,devRefMM,hostDeviceOverlaps,hostTimings,numTimers,com_ref,com_fit);
     double optend = getustime();
-
     fprintf(stderr,"# Optimization used %d iterations of BFGS\n",itercount);
 
     // Get the transforms back
     cudaMemcpy(hostDeviceTransforms,devFitMM.transforms,nfitmols*transform_pitch*sizeof(float),cudaMemcpyDeviceToHost);
-    /*printf("\nAfter optimization:\n"); 
+    /*printf("\nAfter optimization:\n");
     for (int i = 0 ; i < nfitmols; i++) {
         float *xf = hostDeviceTransforms+i*transform_pitch;
         float *matrix = transformToCompensatedMatrix(hostDeviceTransforms+i*transform_pitch,com_ref,com_fit[i]);
@@ -132,7 +127,7 @@ extern "C" int paper_main(int gpuID, list<RDKit::ROMol*>& molecules) {
         printf("   BFGS update: %f\n",(double)(hostTimings[4])/hostTimings[5]);
         printf("   Gradient: %f\n",(double)(hostTimings[6])/hostTimings[7]);
     }
-            
+
 
     bool showresults = true;
     bool benchmark   = false;
@@ -163,7 +158,7 @@ extern "C" int paper_main(int gpuID, list<RDKit::ROMol*>& molecules) {
             // Copy refmol over
             cudaMemcpy(devRefMM.mols,hostRefMM.mols,4*hostRefMM.nmols*devRefMM.pitch*sizeof(float),cudaMemcpyHostToDevice);
             cudaMemcpy(devRefMM.atomcounts,hostRefMM.atomcounts,1*sizeof(uint),cudaMemcpyHostToDevice);
-            
+
             // Copy fitmols and transforms over
             cudaMemcpy(devFitMM.mols,hostFitMM.mols,4*hostFitMM.nmols*devFitMM.pitch*sizeof(float),cudaMemcpyHostToDevice);
             cudaMemcpy(devFitMM.atomcounts,hostFitMM.atomcounts,hostFitMM.nmols*sizeof(uint),cudaMemcpyHostToDevice);
@@ -171,7 +166,7 @@ extern "C" int paper_main(int gpuID, list<RDKit::ROMol*>& molecules) {
             cudaMemcpy(devFitMM.transforms,hostFitMM.transforms,nfitmols*transform_pitch*sizeof(float),cudaMemcpyHostToDevice);
             // Run optimization
             const int itercount = optimize_sepkernels(devFitMM,devRefMM,hostDeviceOverlaps,hostTimings,numTimers,com_ref,com_fit);
-            
+
             // Copy results back
             cudaMemcpy(hostDeviceTransforms,devFitMM.transforms,nfitmols*transform_pitch*sizeof(float),cudaMemcpyDeviceToHost);
             //cudaMemcpy(hostDeviceOverlaps,deviceOverlaps,nfitmols*sizeof(float),cudaMemcpyDeviceToHost);
@@ -190,8 +185,187 @@ extern "C" int paper_main(int gpuID, list<RDKit::ROMol*>& molecules) {
         printf("Benchmark results over %d iterations on %d molecules (%d mol/starts): %f ms/batch optimization, %f ms/molecule, %f ms/position\n",bench_runs,distinctMols,totalMols,runtime,runtime/distinctMols,runtime/totalMols);
 
     } //}}}
-	
+
     delete[] bestOverlaps;
     delete[] bestTransforms;
-	return 0;
-} //}}}
+    return 0;
+}
+
+// int main(int argc, char* argv[]) {
+//    if (argc < 3) {
+//        printf("paper [GPU ID] [listing file] \n");
+//        printf("or\n");
+//        printf("paper [GPU ID] [reference sdf] [fit sdf] [[fit sdf] ...] \n");
+//        return 1;
+//    }
+//    int gpuID = atoi(argv[1]);
+//    list<string> molfiles;
+//    for (int i = 2; i < argc; i++) {
+//        molfiles.push_back(argv[i]);
+//    }
+//    int result = paper_main(gpuID, molfiles);
+//    return 0;
+// }
+//
+// int main(int argc, char* argv[]){
+//     RDKit::ROMol *mol1 = RDKit::SmilesToMol("Cc1ccccc1");
+//     RDDepict::compute2DCoords( *mol1 );
+//     // CUDAmol cudamol = rdkitMolToCUDAmol(mol1);
+//     // cout << "Number of atoms: " << 15 << "\n";
+//
+//     list<RDKit::ROMol*> molecules;
+//     molecules.push_back(mol1);
+//     molecules.push_back(mol1);
+//
+//     int gpuID = atoi(argv[1]);
+//     list<string> molfiles;
+//     for (int i = 2; i < argc; i++) {
+//         molfiles.push_back(argv[i]);
+//     }
+//     int result = paper_main(gpuID, molecules, molfiles);
+//
+//     delete mol1;
+//     return 0;
+// }
+
+// int main(int argc, char* argv[]) {
+//     if (argc < 3) {
+//        printf("paper [GPU ID] [listing file] \n");
+//        printf("or\n");
+//        printf("paper [GPU ID] [reference sdf] [fit sdf] [[fit sdf] ...] \n");
+//        return 1;
+//    }
+//     int gpuID = atoi(argv[1]);
+//     list<RDKit::ROMol*> molecules;
+//     for (int i = 2; i < argc; i++) {
+//         string filename = argv[i];
+//         //ifstream infile(filename.c_str());
+//         if (!infile) {
+//             cerr << "Error: Could not open file " << filename << endl;
+//             return 1;
+//         }
+//         auto mol = RDKit::MolFileToMol(filename);
+//         if (!mol) {
+//             cerr << "Error: Could not parse molecule from file " << filename << endl;
+//             return 1;
+//         }
+//         molecules.push_back(mol);
+//     }
+//     int result = paper_main(gpuID, molecules);
+//     for (auto mol : molecules) {
+//         delete mol;
+//     }
+//     return 0;
+// }
+//
+// int main(int argc, char* argv[]) {
+//     if (argc < 3) {
+//         cerr << "Usage: paper [GPU ID] [mol_file1] [mol_file2] [mol_file3] ...\n";
+//         cerr << "       paper [GPU ID] [runfile]\n";
+//         return 1;
+//     }
+//     int gpuID = atoi(argv[1]);
+//     list<RDKit::ROMol*> molecules;
+//     list<string> molfiles;
+//     for (int i = 2; i < argc; i++) {
+//         molfiles.push_back(argv[i]);
+//     }
+//     if (molfiles.size() == 1) {
+//         // Command line just had a runfile parameter; molecules listed in there.
+//         bool isref = true;
+//         string runfile;
+//         runfile = string(molfiles.front());
+//         FILE* listfile = fopen(runfile.c_str(),"rt");
+//         if (!listfile) {
+//             cerr << "Error: could not open file " << runfile << endl;
+//             return 1;
+//         }
+//         char buf[1025];
+//         while (!feof(listfile)) {
+//             int ch = fgetc(listfile);
+//             if (ch != EOF) {
+//                 ungetc(ch,listfile);
+//             } else break;
+//
+//             fgets(buf,1024,listfile);
+//             // Nuke the newline
+//             char* nl = strchr(buf,'\n');
+//             if (nl)
+//                 *nl = '\0';
+//             if (isref) {
+//                 molfiles.push_front(string(buf));
+//                 isref = false;
+//             } else {
+//                 molfiles.push_back(string(buf));
+//             }
+//         }
+//         fclose(listfile);
+//     }
+//     if (molfiles.size() == 0) {
+//         cerr << "Error: no molecular files specified\n";
+//         return 1;
+//     }
+//
+//     for (auto molfile : molfiles) {
+//         auto mol = RDKit::MolFileToMol(molfile);
+//         if (!mol) {
+//             cerr << "Error: Could not parse molecule from file " << molfile << endl;
+//             return 1;
+//         }
+//         molecules.push_back(mol);
+//     }
+//
+//     int result = paper_main(gpuID, molecules);
+//     for (auto mol : molecules) {
+//         delete mol;
+//     }
+//     return 0;
+// }
+
+int main(int argc, char* argv[]) {
+    if (argc < 3) {
+        cerr << "Usage: paper [GPU ID] [mol_file1] [mol_file2] [mol_file3] ...\n";
+        cerr << "       paper [GPU ID] [runfile]\n";
+        return 1;
+    }
+
+    int gpuID = atoi(argv[1]);
+    list<RDKit::ROMol*> molecules;
+
+    if (argc == 3) { // only one argument provided, assume it's a file with mol files
+        string listing_filename = argv[2];
+        ifstream listing_file(listing_filename);
+        if (!listing_file) {
+            cerr << "Error: Could not open file " << listing_filename << endl;
+            return 1;
+        }
+        string mol_filename;
+        while (getline(listing_file, mol_filename)) {
+            auto mol = RDKit::MolFileToMol(mol_filename);
+            if (!mol) {
+                cerr << "Error: Could not parse molecule from file " << mol_filename << endl;
+                return 1;
+            }
+            molecules.push_back(mol);
+        }
+    } else { // multiple arguments provided, assume each argument is a mol file
+        for (int i = 2; i < argc; i++) {
+            string filename = argv[i];
+            auto mol = RDKit::MolFileToMol(filename);
+            if (!mol) {
+                cerr << "Error: Could not parse molecule from file " << filename << endl;
+                return 1;
+            }
+            molecules.push_back(mol);
+        }
+    }
+
+    int result = paper_main(gpuID, molecules);
+
+    for (auto mol : molecules) {
+        delete mol;
+    }
+
+    return 0;
+}
+
