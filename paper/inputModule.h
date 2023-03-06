@@ -13,10 +13,14 @@
 #ifndef _INPUTMODULE_H_
 #define _INPUTMODULE_H_
 
+#include <list>
+#include <string>
 #include "cudaVolumeTypes.h"
 #include <GraphMol/ROMol.h>
 
-extern "C" void loadMolecules(int argc,char** argv,
+using namespace std;
+
+extern "C" void loadMolecules(int argc,list<string>& molfiles,
                               CUDAmol** fitmols,CUDAmol& refmol,uint** molids,float** transforms,size_t& transform_pitch,
                               dCUDAMultimol& hostFitMM,dCUDAMultimol& devFitMM,
                               dCUDAMultimol& hostRefMM,dCUDAMultimol& devRefMM,
