@@ -21,15 +21,19 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdlib>
+#include <typeinfo>
 #include "inputPreprocessor.h"
 #include <openbabel/mol.h>
 #include <openbabel/obconversion.h>
 #include <openbabel/obiter.h>
 #include <openbabel/data.h>
+#include <GraphMol/ROMol.h>
+#include <GraphMol/RingInfo.h>
 #include <GraphMol/PeriodicTable.h>
 
 using namespace std;
 using namespace OpenBabel;
+using namespace RDKit;
 
 CUDAmol obMolToCUDAmol(OBMol& obmol) 
 { //{{{
@@ -159,7 +163,7 @@ dCUDAmol rdMolTodCUDAmol(RDKit::ROMol* rdmol)
     const float partialalpha = 2.41798793102f;
     const auto &conf = rdmol->getConformer();
     unsigned int idx = 0;
-    const PeriodicTable *table = PeriodicTable::getTable();
+    const PeriodicTable *table = RDKit::PeriodicTable::getTable();
     for (unsigned int i = 0; i < natoms; ++i) {
         const auto& atom = rdmol->getAtomWithIdx(i);
         const auto& coords = conf.getAtomPos(i);
@@ -200,7 +204,7 @@ float3 atomset_centroid_rdkit(RDKit::ROMol* rdmol, const std::set<int>& atoms) {
 }
 
 list<set<int>> find_ring_systems_rdkit(RDKit::ROMol* rdmol, bool includeSpiro=false) {
-    RingInfo *ring_info = rdmol->getRingInfo();
+    RDKit::RingInfo *ring_info = rdmol->getRingInfo();
     list<set<int>> systems;
     for (const auto& ring : ring_info->atomRings()) {
         set<int> ringAts(ring.begin(), ring.end());
