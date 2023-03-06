@@ -55,12 +55,12 @@ extern "C" int paper(int gpuID, list<RDKit::ROMol*>& molecules) {
     uint totalMols,distinctMols;
     float* transforms;
     size_t transform_pitch;
-    load_molecules_rdkit(num_mols, molecules,
-                         &fitmols,refmol,&molids,&transforms,transform_pitch,
-                         hostFitMM,devFitMM,
-                         hostRefMM,devRefMM,
-                         com_ref,&com_fit,
-                         totalMols,distinctMols);
+    loadMoleculesRDKit(num_mols, molecules,
+                       &fitmols,refmol,&molids,&transforms,transform_pitch,
+                       hostFitMM,devFitMM,
+                       hostRefMM,devRefMM,
+                       com_ref,&com_fit,
+                       totalMols,distinctMols);
     uint nfitmols = totalMols;
     //printf("Loaded %d distinct fit molecules, with %d total fit molecules\n",distinctMols,totalMols);
     //printf("Ref molecule: %d atoms\n",refmol.natoms);
