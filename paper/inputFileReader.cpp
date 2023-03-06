@@ -239,7 +239,19 @@ extern "C" void molFromFile(string filename,list<CUDAmol>& cmols,list<dCUDAmol>&
         centroids.push_back(atomset_centroid(mol,*i));
     }
     ring_centroids.push_back(centroids);
-    //printf("Done loading molecule\n\n");
     return;
 }
 
+extern "C" void molFromRDKit(RDKit::ROMol* rdmol,list<CUDAmol>& cmols,
+                             list<dCUDAmol>& dcmols,list<list<float3> >& ring_centroids)
+{
+    list<set<int> > ringsystems = find_ring_systems_rdkit(rdmol);
+    cmols.push_back(rdMolToCUDAmol(rdmol));
+    dcmols.push_back(rdMolTodCUDAmol(rdmol));
+    list<float3> centroids;
+    for (list<set<int> >::iterator i = ringsystems.begin(); i != ringsystems.end(); i++) {
+        centroids.push_back(atomset_centroid_rdkit(rdmol,*i));
+    }
+    ring_centroids.push_back(centroids);
+    return;
+}
