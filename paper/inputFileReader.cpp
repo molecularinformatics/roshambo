@@ -26,6 +26,17 @@
 #include <openbabel/obconversion.h>
 #include <openbabel/obiter.h>
 #include <openbabel/data.h>
+//#include <GraphMol/ROMol.h>
+#include <GraphMol/PeriodicTable.h>
+//#include <GraphMol/MolOps.h>
+//#include <GraphMol/Depictor/RDDepictor.h>
+//#include <GraphMol/SmilesParse/SmilesParse.h>
+//#include <GraphMol/FileParsers/MolSupplier.h>
+//#include <GraphMol/GraphMol.h>
+//#include <GraphMol/RDKitBase.h>
+//#include <GraphMol/RingInfo.h>
+
+#include <typeinfo>
 
 using namespace std;
 using namespace OpenBabel;
