@@ -1,13 +1,14 @@
 OBPATH=/UserUCDD/ratwi/openbabel/include/openbabel-2.0
-CCFLAGS=-O2 -I$(OBPATH) -DORIG_GLOBAL -DFAST_OVERLAP -DNO_DIV_ADDRESS
-LDFLAGS=-L/UserUCDD/ratwi/openbabel/lib
+RDPATH=/UserUCDD/ratwi/rdkit/Code
+CCFLAGS=-O2 -I$(OBPATH) -I$(RDPATH) -DORIG_GLOBAL -DFAST_OVERLAP -DNO_DIV_ADDRESS -std=c++11
+LDFLAGS=-L/UserUCDD/ratwi/openbabel/lib -L/UserUCDD/ratwi/rdkit/lib
 PTXFLAGS=-Xcompiler -O2 -arch sm_50 -Xptxas -v
-all: paper 
+all: paper
 clean:
 	rm -f paper *.linkinfo *.cu.cpp *.i *.ii *.cubin *.ptx *cudafe* *.o *.fatbin.c *.hash
 
 paper: paper.o deviceAnalyticVolume.o hostAnalyticVolume.o deviceOverlay.o transformTools.o inputFileReader.o inputPreprocessor.o inputModule.o
-	nvcc $(LDFLAGS) -O3 -o paper paper.o deviceAnalyticVolume.o hostAnalyticVolume.o deviceOverlay.o transformTools.o inputPreprocessor.o inputFileReader.o inputModule.o -lopenbabel
+	nvcc $(LDFLAGS) -O3 -o paper paper.o deviceAnalyticVolume.o hostAnalyticVolume.o deviceOverlay.o transformTools.o inputPreprocessor.o inputFileReader.o inputModule.o -lopenbabel -lRDKitGraphMol -lRDKitSmilesParse -lRDKitFileParsers -lRDKitDepictor -lRDKitRDGeneral
 
 paper.o: paper.cu
 	nvcc $(CCFLAGS) -c paper.cu
