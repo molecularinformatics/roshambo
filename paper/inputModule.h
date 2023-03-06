@@ -14,6 +14,7 @@
 #define _INPUTMODULE_H_
 
 #include "cudaVolumeTypes.h"
+#include <GraphMol/ROMol.h>
 
 extern "C" void loadMolecules(int argc,char** argv,
                               CUDAmol** fitmols,CUDAmol& refmol,uint** molids,float** transforms,size_t& transform_pitch,
@@ -21,5 +22,12 @@ extern "C" void loadMolecules(int argc,char** argv,
                               dCUDAMultimol& hostRefMM,dCUDAMultimol& devRefMM,
                               float3& com_ref,float3** com_fit,
                               uint& totalMols,uint& distinctMols);
+
+extern "C" void loadMoleculesRDKit(int num_mols,list<RDKit::ROMol*>& molecules,
+                                   CUDAmol** fitmols,CUDAmol& refmol,uint** molids,float** transforms,size_t& transform_pitch,
+                                   dCUDAMultimol& hostFitMM,dCUDAMultimol& devFitMM,
+                                   dCUDAMultimol& hostRefMM,dCUDAMultimol& devRefMM,
+                                   float3& com_ref,float3** com_fit,
+                                   uint& totalMols,uint& distinctMols);
 
 #endif
