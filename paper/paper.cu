@@ -33,15 +33,10 @@ double getustime(void) { // {{{
     return t;
 } //}}}
 
-int main(int argc,char** argv) 
-{ // {{{
-	if (argc < 3) {
-		printf("paper [GPU ID] [listing file] \n");
-        printf("or\n");
-		printf("paper [GPU ID] [reference sdf] [fit sdf] [[fit sdf] ...] \n");
-		return 1;
-	}
-    const int gpuID = atoi(argv[1]);
+extern "C" int paper_main(int gpuID, list<RDKit::ROMol*>& molecules) {
+    int num_mols = 0;
+    num_mols = molecules.size();
+
     cudaSetDevice(gpuID);
     fprintf(stderr,"# Executing on GPU %d\n",gpuID);
 
@@ -57,12 +52,12 @@ int main(int argc,char** argv)
     uint totalMols,distinctMols;
     float* transforms;
     size_t transform_pitch;
-    loadMolecules(argc-1,argv+1,
-                  &fitmols,refmol,&molids,&transforms,transform_pitch,
-                  hostFitMM,devFitMM,
-                  hostRefMM,devRefMM,
-                  com_ref,&com_fit,
-                  totalMols,distinctMols);
+    load_molecules_rdkit(num_mols, molecules,
+                         &fitmols,refmol,&molids,&transforms,transform_pitch,
+                         hostFitMM,devFitMM,
+                         hostRefMM,devRefMM,
+                         com_ref,&com_fit,
+                         totalMols,distinctMols);
     uint nfitmols = totalMols;
     
     //printf("Loaded %d distinct fit molecules, with %d total fit molecules\n",distinctMols,totalMols);
