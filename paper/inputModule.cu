@@ -300,7 +300,7 @@ list<molAndTransform*> rdmolToMolAndStarts(RDKit::ROMol* molecule,uint molid,con
     list<CUDAmol> cmolConformers;
     list<dCUDAmol> dcmolConformers;
     list<list<float3> > ringCentroids;
-    mol_from_rdkit(molecule,cmolConformers,dcmolConformers,ringCentroids);
+    molFromRDKit(molecule,cmolConformers,dcmolConformers,ringCentroids);
 
     CUDAmol cmol = cmolConformers.front();
     cmolConformers.pop_front();
@@ -1097,7 +1097,7 @@ extern "C" void loadMoleculesRDKit(int num_mols,list<RDKit::ROMol*>& molecules,
     list<CUDAmol> cmolConformers;
     list<dCUDAmol> dcmolConformers;
     list<list<float3> > ringCentroids;
-    mol_from_rdkit(refrdmol,cmolConformers,dcmolConformers,ringCentroids);
+    molFromRDKit(refrdmol,cmolConformers,dcmolConformers,ringCentroids);
 
     refmol = cmolConformers.front();
     cmolConformers.pop_front();
