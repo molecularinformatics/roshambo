@@ -296,6 +296,48 @@ list<molAndTransform*> molFileToMolAndStarts(string filename,uint molid,const CU
     return molStarts;
 }
 
+list<molAndTransform*> rdmolToMolAndStarts(RDKit::ROMol* molecule,uint molid,const CUDAmol& refmol,const list<float3>& refmolRingCentroids) {
+    list<CUDAmol> cmolConformers;
+    list<dCUDAmol> dcmolConformers;
+    list<list<float3> > ringCentroids;
+    mol_from_rdkit(molecule,cmolConformers,dcmolConformers,ringCentroids);
+
+    CUDAmol cmol = cmolConformers.front();
+    cmolConformers.pop_front();
+    float3 com_fit = centerOfMass(cmol);
+
+    dCUDAmol dcmol = dcmolConformers.front();
+    dcmolConformers.pop_front();
+    remove_com( cmol,com_fit);
+    remove_com(dcmol,com_fit);
+
+    list<float3> fitmolRingCentroids;
+    // Add a com_fit-compensated centroid to the list of ring centroids for each one found
+    for (list<float3>::iterator i = ringCentroids.front().begin(); i != ringCentroids.front().end(); i++) {
+        fitmolRingCentroids.push_back(*i - com_fit);
+    }
+    ringCentroids.pop_front();
+
+    /*printf("Loaded from disk fit mol id %d:\n",molid);
+    for (int i =0; i < dcmol.natoms; i++) {
+        printf("atom %d: [%f,%f,%f,%f]\n",i,dcmol.x[i],dcmol.y[i],dcmol.z[i],dcmol.a[i]);
+    }
+    */
+    list<struct transform> startingPoints = initializeStartingPoints(cmol,refmol,refmolRingCentroids,fitmolRingCentroids);
+    list<molAndTransform*> molStarts;
+    for (list<struct transform>::iterator iter = startingPoints.begin(); iter!= startingPoints.end(); iter++) {
+        molAndTransform* mat = new molAndTransform;
+        mat->cmol = dupCUDAmol(cmol);
+        mat->dcmol = dupdCUDAmol(dcmol);
+        mat->molid = molid;
+        mat->com = com_fit;
+        memcpy(mat->transform,iter->xf,7*sizeof(float));
+        molStarts.push_back(mat);
+    }
+
+    return molStarts;
+}
+
 void molxfsTodcMMs(list<molAndTransform*> molxflist,dCUDAMultimol& hostMM,dCUDAMultimol& devMM) {
     uint maxatoms = 0;
     uint count = molxflist.size();
