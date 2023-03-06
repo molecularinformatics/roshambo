@@ -128,7 +128,7 @@ CUDAmol rdMolToCUDAmol(RDKit::ROMol* rdmol)
     mol.atoms = new float4[mol.natoms];
     const auto &conf = rdmol->getConformer();
     unsigned int idx = 0;
-    const PeriodicTable *table = PeriodicTable::getTable();
+    const PeriodicTable *table = RDKit::PeriodicTable::getTable();
     for (unsigned int i = 0; i < natoms; ++i) {
         const auto& atom = rdmol->getAtomWithIdx(i);
         const auto& coords = conf.getAtomPos(i);
