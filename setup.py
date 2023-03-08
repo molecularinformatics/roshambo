@@ -143,9 +143,3 @@ setuptools.setup(
     ext_modules=[ext],
     cmdclass={"build_ext": CustomBuildExt},
 )
-
-# setuptools.setup(
-#     name="pypaper",
-#     ext_modules=[ext],
-#     cmdclass={"build_ext": CustomBuildExt},
-# )
