@@ -198,33 +198,45 @@ class GetSimilarityScores:
             ref_overlap = calculate_analytic_overlap_volume(self.ref_mol, self.ref_mol)
             inputs = [(self.ref_mol, fit_mol) for fit_mol in self.transformed_molecules]
 
-    def calculate_tanimoto(self, res=0.4, margin=0.4, save_to_file=False):
-        ref_grid = Grid(self.ref_mol, res=res, margin=margin)
-        ref_grid.create_grid()
-        ref_overlap = self._calculate_overlap_volume(
-            ref_grid, self.ref_mol, self.ref_mol
-        )
-        inputs = [
-            (
-                fit_mol,
-                res,
-                margin,
-                self._calculate_overlap_volume,
-                ref_grid,
-                self.ref_mol,
-                ref_overlap,
-            )
-            for fit_mol in self.transformed_molecules
-        ]
+            with Pool(processes=cpu_count()) as pool:
+                outputs = pool.starmap(calculate_tanimoto_analytic, inputs)
+            et = time.time()
+            print(f"Analytic volume calculation took: {et - st}")
 
-        with Pool(processes=cpu_count()) as pool:
-            full_tanimoto = pool.starmap(self._calculate_tanimoto, inputs)
+        else:
+            st = time.time()
+            ref_grid = Grid(self.ref_mol, res=res, margin=margin)
+            ref_grid.create_grid()
+            ref_overlap = calculate_gaussian_overlap_volume(self.ref_mol, self.ref_mol, ref_grid)
+            inputs = [
+                (
+                    fit_mol,
+                    res,
+                    margin,
+                    ref_grid,
+                    self.ref_mol,
+                )
+                for fit_mol in self.transformed_molecules
+            ]
+
+            with Pool(processes=cpu_count()) as pool:
+                outputs = pool.starmap(calculate_tanimoto_gaussian, inputs)
+            et = time.time()
+            print(f"Gaussian volume calculation took: {et - st}")
+
+        outputs = np.array(outputs)
+        full_fit_overlap = outputs[:, 0]
+        full_ref_fit_overlap = outputs[:, 1]
+        full_ref_overlap = np.ones_like(full_fit_overlap) * ref_overlap
+        full_tanimoto = full_ref_fit_overlap / (
+                full_ref_overlap + full_fit_overlap - full_ref_fit_overlap)
 
         df = pd.DataFrame(
             {
                 "Molecule": [
                     os.path.basename(path).split(".")[0] for path in self.dataset_files
                 ],
+                "Overlap": full_ref_fit_overlap,
                 "Tanimoto": full_tanimoto,
             }
         )
