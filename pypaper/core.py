@@ -5,13 +5,11 @@
 
 import os
 import glob
-import subprocess
+import time
 
 import numpy as np
 import pandas as pd
 
-from configparser import ConfigParser
-from timeit import default_timer as timer
 from multiprocessing import Pool, cpu_count
 
 from scipy.spatial.transform import Rotation
@@ -19,6 +17,13 @@ from scipy.spatial.transform import Rotation
 from rdkit import Chem
 
 from pypaper.grid import Grid
+from pypaper.cpaper import cpaper
+from pypaper.volume import (
+    calculate_analytic_overlap_volume,
+    calculate_gaussian_overlap_volume,
+    calculate_tanimoto_analytic,
+    calculate_tanimoto_gaussian,
+)
 from pypaper.structure import Molecule
 from pypaper.utilities import split_sdf_file
 
@@ -68,48 +73,6 @@ class GetSimilarityScores:
         mol.write_molfile(file)
         return mol
 
-    # def run_paper(self, paper_cmd=None, gpu_id=0, cleanup=True):
-    #     run_file = f"{self.working_dir}/runfile"
-    #     with open(run_file, "w") as f:
-    #         for file in [self.ref_file] + self.dataset_files:
-    #             f.write(file + "\n")
-    #
-    #     # TODO: add mode and arguments that can be specified to paper
-    #     # TODO: include a case where the run_file is provided as input
-    #     if not paper_cmd:
-    #         cfg = ConfigParser()
-    #         cfg.read(os.environ.get("CONFIG_FILE_PATH", "../config/config.ini"))
-    #         cmd = cfg["RunPAPER"]["paper_cmd"]
-    #         paper_cmd = cmd.replace("$gpu_id$", str(gpu_id)).replace(
-    #             "$run_file$", run_file
-    #         )
-    #
-    #     st = timer()
-    #     return_code = subprocess.run(
-    #         paper_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    #     )
-    #     run_time = timer() - st
-    #     print(f"Run time: {run_time}")
-    #
-    #     output = return_code.stdout.decode()
-    #     output_strings = output.split("[[")
-    #     output_strings = [i.replace("]]", "") for i in output_strings]
-    #     output_strings = [i.replace("\n", " ") for i in output_strings]
-    #     output_strings = [i.strip() for i in output_strings if i]
-    #
-    #     # convert each string into a numpy array
-    #     output_arrays = [
-    #         np.fromstring(output_string, dtype=float, sep=" ")
-    #         for output_string in output_strings
-    #     ]
-    #     self.transformation_arrays = [
-    #         np.reshape(output_array, (4, 4)) for output_array in output_arrays
-    #     ]
-    #
-    #     if cleanup:
-    #         print("Cleaning up...")
-    #         os.remove(f"{self.working_dir}/runfile")
-
     def run_paper(self, gpu_id=0):
         molecules = [self.ref_mol] + self.dataset_mols
         self.transformation_arrays = cpaper(gpu_id, molecules)
@@ -137,20 +100,6 @@ class GetSimilarityScores:
             if write_to_file:
                 mol.write_molfile(f"{self.working_dir}/{mol.name}.sdf")
 
-    # def _calculate_overlap_volume(self, grid, ref_mol, fit_mol):
-    #     gcs = grid.converted_grid
-    #     ref_mol_coords_radii = ref_mol.get_atomic_coordinates_and_radii()
-    #     fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii()
-    #
-    #     rho_ref = self.rho(ref_mol_coords_radii[:, np.newaxis], gcs)
-    #     ref_grid = 1 - np.prod(1 - rho_ref, axis=1)
-    #
-    #     rho_fit = self.rho(fit_mol_coords_radii[:, np.newaxis], gcs)
-    #     fit_grid = 1 - np.prod(1 - rho_fit, axis=1)
-    #
-    #     volume = np.sum(ref_grid * fit_grid) * grid.res**3
-    #     return volume
-
     def calculate_volume(self, grid, mol):
         gcs = grid.converted_grid
         volume = 0
@@ -166,32 +115,9 @@ class GetSimilarityScores:
             volume += 1 - mol_grid
         return volume * grid.res**3
 
-    # @staticmethod
-    # def _calculate_tanimoto(
-    #     fit_mol, res, margin, calculate_overlap_volume, ref_grid, ref_mol, ref_overlap
-    # ):
-    #     st = time.time()
-    #     fit_grid = Grid(fit_mol, res=res, margin=margin)
-    #     fit_grid.create_grid()
-    #     fit_overlap = calculate_overlap_volume(fit_grid, fit_mol, fit_mol)
-    #     et = time.time()
-    #     print(f"Fit volume calculation took: {et - st}")
-    #
-    #     st = time.time()
-    #     ref_fit_overlap = calculate_overlap_volume(
-    #         ref_grid
-    #         if np.prod(ref_grid.extent) < np.prod(fit_grid.extent)
-    #         else fit_grid,
-    #         ref_mol,
-    #         fit_mol,
-    #     )
-    #     et = time.time()
-    #     print(f"Ref-fit overlap took: {et - st}")
-    #     print(ref_fit_overlap)
-    #     tanimoto = ref_fit_overlap / (ref_overlap + fit_overlap - ref_fit_overlap)
-    #     return tanimoto
-
-    def calculate_tanimoto(self, volume_type="analytic", res=0.4, margin=0.4, save_to_file=False):
+    def calculate_tanimoto(
+        self, volume_type="analytic", res=0.4, margin=0.4, save_to_file=False
+    ):
         # TODO: return overlap volumes instead of tanimotos
         if volume_type == "analytic":
             st = time.time()
@@ -207,7 +133,9 @@ class GetSimilarityScores:
             st = time.time()
             ref_grid = Grid(self.ref_mol, res=res, margin=margin)
             ref_grid.create_grid()
-            ref_overlap = calculate_gaussian_overlap_volume(self.ref_mol, self.ref_mol, ref_grid)
+            ref_overlap = calculate_gaussian_overlap_volume(
+                self.ref_mol, self.ref_mol, ref_grid
+            )
             inputs = [
                 (
                     fit_mol,
@@ -229,7 +157,8 @@ class GetSimilarityScores:
         full_ref_fit_overlap = outputs[:, 1]
         full_ref_overlap = np.ones_like(full_fit_overlap) * ref_overlap
         full_tanimoto = full_ref_fit_overlap / (
-                full_ref_overlap + full_fit_overlap - full_ref_fit_overlap)
+            full_ref_overlap + full_fit_overlap - full_ref_fit_overlap
+        )
 
         df = pd.DataFrame(
             {
@@ -244,13 +173,3 @@ class GetSimilarityScores:
         if save_to_file:
             df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
         return df
-
-    # @staticmethod
-    # def rho(atoms, gcs):
-    #     rt22 = 2.82842712475
-    #     partialalpha = -2.41798793102
-    #     alphas = partialalpha / (atoms[:, 0, 3] ** 2)
-    #     diffs = gcs[:, np.newaxis, :] - atoms[:, 0, :3]
-    #     r2s = np.sum(diffs * diffs, axis=-1)
-    #     rhos = rt22 * np.exp(alphas[np.newaxis, :] * r2s)
-    #     return rhos
