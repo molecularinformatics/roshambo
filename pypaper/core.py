@@ -243,7 +243,7 @@ class GetSimilarityScores:
         df.sort_values(by="Tanimoto", ascending=False, inplace=True)
         if save_to_file:
             df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
-        return full_tanimoto
+        return df
 
     # @staticmethod
     # def rho(atoms, gcs):
