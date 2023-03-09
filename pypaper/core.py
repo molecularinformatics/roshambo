@@ -137,19 +137,19 @@ class GetSimilarityScores:
             if write_to_file:
                 mol.write_molfile(f"{self.working_dir}/{mol.name}.sdf")
 
-    def _calculate_overlap_volume(self, grid, ref_mol, fit_mol):
-        gcs = grid.converted_grid
-        ref_mol_coords_radii = ref_mol.get_atomic_coordinates_and_radii()
-        fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii()
-
-        rho_ref = self.rho(ref_mol_coords_radii[:, np.newaxis], gcs)
-        ref_grid = 1 - np.prod(1 - rho_ref, axis=1)
-
-        rho_fit = self.rho(fit_mol_coords_radii[:, np.newaxis], gcs)
-        fit_grid = 1 - np.prod(1 - rho_fit, axis=1)
-
-        volume = np.sum(ref_grid * fit_grid) * grid.res**3
-        return volume
+    # def _calculate_overlap_volume(self, grid, ref_mol, fit_mol):
+    #     gcs = grid.converted_grid
+    #     ref_mol_coords_radii = ref_mol.get_atomic_coordinates_and_radii()
+    #     fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii()
+    #
+    #     rho_ref = self.rho(ref_mol_coords_radii[:, np.newaxis], gcs)
+    #     ref_grid = 1 - np.prod(1 - rho_ref, axis=1)
+    #
+    #     rho_fit = self.rho(fit_mol_coords_radii[:, np.newaxis], gcs)
+    #     fit_grid = 1 - np.prod(1 - rho_fit, axis=1)
+    #
+    #     volume = np.sum(ref_grid * fit_grid) * grid.res**3
+    #     return volume
 
     def calculate_volume(self, grid, mol):
         gcs = grid.converted_grid
@@ -166,22 +166,37 @@ class GetSimilarityScores:
             volume += 1 - mol_grid
         return volume * grid.res**3
 
-    @staticmethod
-    def _calculate_tanimoto(
-        fit_mol, res, margin, calculate_overlap_volume, ref_grid, ref_mol, ref_overlap
-    ):
-        fit_grid = Grid(fit_mol, res=res, margin=margin)
-        fit_grid.create_grid()
-        fit_overlap = calculate_overlap_volume(fit_grid, fit_mol, fit_mol)
-        ref_fit_overlap = calculate_overlap_volume(
-            ref_grid
-            if np.prod(ref_grid.extent) < np.prod(fit_grid.extent)
-            else fit_grid,
-            ref_mol,
-            fit_mol,
-        )
-        tanimoto = ref_fit_overlap / (ref_overlap + fit_overlap - ref_fit_overlap)
-        return tanimoto
+    # @staticmethod
+    # def _calculate_tanimoto(
+    #     fit_mol, res, margin, calculate_overlap_volume, ref_grid, ref_mol, ref_overlap
+    # ):
+    #     st = time.time()
+    #     fit_grid = Grid(fit_mol, res=res, margin=margin)
+    #     fit_grid.create_grid()
+    #     fit_overlap = calculate_overlap_volume(fit_grid, fit_mol, fit_mol)
+    #     et = time.time()
+    #     print(f"Fit volume calculation took: {et - st}")
+    #
+    #     st = time.time()
+    #     ref_fit_overlap = calculate_overlap_volume(
+    #         ref_grid
+    #         if np.prod(ref_grid.extent) < np.prod(fit_grid.extent)
+    #         else fit_grid,
+    #         ref_mol,
+    #         fit_mol,
+    #     )
+    #     et = time.time()
+    #     print(f"Ref-fit overlap took: {et - st}")
+    #     print(ref_fit_overlap)
+    #     tanimoto = ref_fit_overlap / (ref_overlap + fit_overlap - ref_fit_overlap)
+    #     return tanimoto
+
+    def calculate_tanimoto(self, volume_type="analytic", res=0.4, margin=0.4, save_to_file=False):
+        # TODO: return overlap volumes instead of tanimotos
+        if volume_type == "analytic":
+            st = time.time()
+            ref_overlap = calculate_analytic_overlap_volume(self.ref_mol, self.ref_mol)
+            inputs = [(self.ref_mol, fit_mol) for fit_mol in self.transformed_molecules]
 
     def calculate_tanimoto(self, res=0.4, margin=0.4, save_to_file=False):
         ref_grid = Grid(self.ref_mol, res=res, margin=margin)
@@ -218,12 +233,12 @@ class GetSimilarityScores:
             df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
         return full_tanimoto
 
-    @staticmethod
-    def rho(atoms, gcs):
-        rt22 = 2.82842712475
-        partialalpha = -2.41798793102
-        alphas = partialalpha / (atoms[:, 0, 3] ** 2)
-        diffs = gcs[:, np.newaxis, :] - atoms[:, 0, :3]
-        r2s = np.sum(diffs * diffs, axis=-1)
-        rhos = rt22 * np.exp(alphas[np.newaxis, :] * r2s)
-        return rhos
+    # @staticmethod
+    # def rho(atoms, gcs):
+    #     rt22 = 2.82842712475
+    #     partialalpha = -2.41798793102
+    #     alphas = partialalpha / (atoms[:, 0, 3] ** 2)
+    #     diffs = gcs[:, np.newaxis, :] - atoms[:, 0, :3]
+    #     r2s = np.sum(diffs * diffs, axis=-1)
+    #     rhos = rt22 * np.exp(alphas[np.newaxis, :] * r2s)
+    #     return rhos
