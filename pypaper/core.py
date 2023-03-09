@@ -128,7 +128,7 @@ class GetSimilarityScores:
             et = time.time()
             print(f"Analytic volume calculation took: {et - st}")
 
-        else:
+        elif volume_type == "gaussian":
             st = time.time()
             ref_grid = Grid(self.ref_mol, res=res, margin=margin)
             ref_grid.create_grid()
@@ -150,6 +150,11 @@ class GetSimilarityScores:
                 outputs = pool.starmap(calc_multi_gaussian_overlap_vol, inputs)
             et = time.time()
             print(f"Gaussian volume calculation took: {et - st}")
+
+        else:
+            raise ValueError(
+                "Invalid volume_type argument. Must be 'analytic' or 'gaussian'."
+            )
 
         outputs = np.array(outputs)
         full_fit_overlap = outputs[:, 0]
