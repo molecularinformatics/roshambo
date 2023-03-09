@@ -19,10 +19,10 @@ from rdkit import Chem
 from pypaper.grid import Grid
 from pypaper.cpaper import cpaper
 from pypaper.volume import (
-    calculate_analytic_overlap_volume,
-    calculate_gaussian_overlap_volume,
-    calculate_tanimoto_analytic,
-    calculate_tanimoto_gaussian,
+    calc_analytic_overlap_vol,
+    calc_gaussian_overlap_vol,
+    calc_multi_analytic_overlap_vol,
+    calc_multi_gaussian_overlap_vol,
 )
 from pypaper.structure import Molecule
 from pypaper.utilities import split_sdf_file
@@ -120,11 +120,11 @@ class GetSimilarityScores:
     ):
         if volume_type == "analytic":
             st = time.time()
-            ref_overlap = calculate_analytic_overlap_volume(self.ref_mol, self.ref_mol)
+            ref_overlap = calc_analytic_overlap_vol(self.ref_mol, self.ref_mol)
             inputs = [(self.ref_mol, fit_mol) for fit_mol in self.transformed_molecules]
 
             with Pool(processes=cpu_count()) as pool:
-                outputs = pool.starmap(calculate_tanimoto_analytic, inputs)
+                outputs = pool.starmap(calc_multi_analytic_overlap_vol, inputs)
             et = time.time()
             print(f"Analytic volume calculation took: {et - st}")
 
@@ -132,7 +132,7 @@ class GetSimilarityScores:
             st = time.time()
             ref_grid = Grid(self.ref_mol, res=res, margin=margin)
             ref_grid.create_grid()
-            ref_overlap = calculate_gaussian_overlap_volume(
+            ref_overlap = calc_gaussian_overlap_vol(
                 self.ref_mol, self.ref_mol, ref_grid
             )
             inputs = [
@@ -147,7 +147,7 @@ class GetSimilarityScores:
             ]
 
             with Pool(processes=cpu_count()) as pool:
-                outputs = pool.starmap(calculate_tanimoto_gaussian, inputs)
+                outputs = pool.starmap(calc_multi_gaussian_overlap_vol, inputs)
             et = time.time()
             print(f"Gaussian volume calculation took: {et - st}")
 

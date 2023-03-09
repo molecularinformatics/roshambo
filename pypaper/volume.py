@@ -7,7 +7,7 @@ PARTIAL_ALPHA = 2.41798793102
 PI = 3.14159265358
 
 
-def calculate_analytic_overlap_volume(ref_mol, fit_mol):
+def calc_analytic_overlap_vol(ref_mol, fit_mol):
     ref_mol_coords_radii = ref_mol.get_atomic_coordinates_and_radii()
     fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii()
 
@@ -33,9 +33,9 @@ def calculate_analytic_overlap_volume(ref_mol, fit_mol):
     return overlap
 
 
-def calculate_tanimoto_analytic(ref_mol, fit_mol):
-    fit_overlap = calculate_analytic_overlap_volume(fit_mol, fit_mol)
-    ref_fit_overlap = calculate_analytic_overlap_volume(ref_mol, fit_mol)
+def calc_multi_analytic_overlap_vol(ref_mol, fit_mol):
+    fit_overlap = calc_analytic_overlap_vol(fit_mol, fit_mol)
+    ref_fit_overlap = calc_analytic_overlap_vol(ref_mol, fit_mol)
     return fit_overlap, ref_fit_overlap
 
 
@@ -48,7 +48,7 @@ def rho(atoms, gcs):
     return rhos
 
 
-def calculate_gaussian_overlap_volume(ref_mol, fit_mol, grid):
+def calc_gaussian_overlap_vol(ref_mol, fit_mol, grid):
     gcs = grid.converted_grid
     ref_mol_coords_radii = ref_mol.get_atomic_coordinates_and_radii()
     fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii()
@@ -62,12 +62,12 @@ def calculate_gaussian_overlap_volume(ref_mol, fit_mol, grid):
     return volume
 
 
-def calculate_tanimoto_gaussian(fit_mol, res, margin, ref_grid, ref_mol):
+def calc_multi_gaussian_overlap_vol(fit_mol, res, margin, ref_grid, ref_mol):
     fit_grid = Grid(fit_mol, res=res, margin=margin)
     fit_grid.create_grid()
-    fit_overlap = calculate_gaussian_overlap_volume(fit_mol, fit_mol, fit_grid)
+    fit_overlap = calc_gaussian_overlap_vol(fit_mol, fit_mol, fit_grid)
 
-    ref_fit_overlap = calculate_gaussian_overlap_volume(
+    ref_fit_overlap = calc_gaussian_overlap_vol(
         ref_mol,
         fit_mol,
         ref_grid if np.prod(ref_grid.extent) < np.prod(fit_grid.extent) else fit_grid,
