@@ -118,7 +118,6 @@ class GetSimilarityScores:
     def calculate_tanimoto(
         self, volume_type="analytic", res=0.4, margin=0.4, save_to_file=False
     ):
-        # TODO: return overlap volumes instead of tanimotos
         if volume_type == "analytic":
             st = time.time()
             ref_overlap = calculate_analytic_overlap_volume(self.ref_mol, self.ref_mol)
