@@ -36,7 +36,6 @@ def calculate_analytic_overlap_volume(ref_mol, fit_mol):
 def calculate_tanimoto_analytic(ref_mol, fit_mol):
     fit_overlap = calculate_analytic_overlap_volume(fit_mol, fit_mol)
     ref_fit_overlap = calculate_analytic_overlap_volume(ref_mol, fit_mol)
-    # tanimoto = ref_fit_overlap / (ref_overlap + fit_overlap - ref_fit_overlap)
     return fit_overlap, ref_fit_overlap
 
 
@@ -59,20 +58,18 @@ def calculate_gaussian_overlap_volume(ref_mol, fit_mol, grid):
 
     rho_fit = rho(fit_mol_coords_radii[:, np.newaxis], gcs)
     fit_grid = 1 - np.prod(1 - rho_fit, axis=1)
-    volume = np.sum(ref_grid * fit_grid) * grid.res ** 3
+    volume = np.sum(ref_grid * fit_grid) * grid.res**3
     return volume
 
 
-def calculate_tanimoto_gaussian(
-    fit_mol, res, margin, ref_grid, ref_mol
-):
+def calculate_tanimoto_gaussian(fit_mol, res, margin, ref_grid, ref_mol):
     fit_grid = Grid(fit_mol, res=res, margin=margin)
     fit_grid.create_grid()
     fit_overlap = calculate_gaussian_overlap_volume(fit_mol, fit_mol, fit_grid)
 
-    ref_fit_overlap = calculate_gaussian_overlap_volume(ref_mol, fit_mol,
-        ref_grid
-        if np.prod(ref_grid.extent) < np.prod(fit_grid.extent)
-        else fit_grid
+    ref_fit_overlap = calculate_gaussian_overlap_volume(
+        ref_mol,
+        fit_mol,
+        ref_grid if np.prod(ref_grid.extent) < np.prod(fit_grid.extent) else fit_grid,
     )
     return fit_overlap, ref_fit_overlap
