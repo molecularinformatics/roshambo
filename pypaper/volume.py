@@ -1,5 +1,8 @@
 import numpy as np
 
+from pypaper.grid import Grid
+
+
 PARTIAL_ALPHA = 2.41798793102
 PI = 3.14159265358
 
