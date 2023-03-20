@@ -53,7 +53,9 @@ class GetSimilarityScores:
             )
 
         # TODO:Check if saving all molecules into numpy arrays will cause memory leaks
-        self.ref_mol = self._process_molecule(self.ref_file, opt=opt, ignore_hydrogens=ignore_hydrogens)
+        self.ref_mol = self._process_molecule(
+            self.ref_file, opt=opt, ignore_hydrogens=ignore_hydrogens
+        )
         self.dataset_mols = [
             self._process_molecule(file, opt=opt, ignore_hydrogens=ignore_hydrogens)
             for file in self.dataset_files
@@ -133,7 +135,9 @@ class GetSimilarityScores:
             ref_grid = Grid(self.ref_mol, res=res, margin=margin)
             ref_grid.create_grid()
             ref_overlap = calc_gaussian_overlap_vol(
-                self.ref_mol, self.ref_mol, ref_grid
+                self.ref_mol,
+                self.ref_mol,
+                ref_grid,
             )
             inputs = [
                 (
