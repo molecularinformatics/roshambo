@@ -35,7 +35,7 @@ class GetSimilarityScores:
         dataset_files_pattern,
         split_dataset_files=False,
         opt=False,
-        removeHs=False,
+        ignore_hydrogens=False,
         working_dir=None,
     ):
         self.working_dir = working_dir or os.getcwd()
