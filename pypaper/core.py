@@ -53,9 +53,9 @@ class GetSimilarityScores:
             )
 
         # TODO:Check if saving all molecules into numpy arrays will cause memory leaks
-        self.ref_mol = self._process_molecule(self.ref_file, opt=opt, removeHs=removeHs)
+        self.ref_mol = self._process_molecule(self.ref_file, opt=opt, ignore_hydrogens=ignore_hydrogens)
         self.dataset_mols = [
-            self._process_molecule(file, opt=opt, removeHs=removeHs)
+            self._process_molecule(file, opt=opt, ignore_hydrogens=ignore_hydrogens)
             for file in self.dataset_files
         ]
 
@@ -65,8 +65,8 @@ class GetSimilarityScores:
         self.transformed_molecules = []
 
     @staticmethod
-    def _process_molecule(file, opt=False, removeHs=False):
-        rdkit_mol = Chem.MolFromMolFile(file, removeHs=removeHs)
+    def _process_molecule(file, opt=False, ignore_hydrogens=False):
+        rdkit_mol = Chem.MolFromMolFile(file, removeHs=ignore_hydrogens)
         mol = Molecule(rdkit_mol, opt=opt)
         mol.center_mol()
         mol.project_mol()
