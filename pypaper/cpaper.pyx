@@ -17,14 +17,13 @@ cdef extern from "/UserUCDD/ratwi/pypaper/paper/paper.cu":
 def cpaper(gpu_id, molfiles):
     molfiles_b = [arg.encode("utf-8") for arg in molfiles]
 
+def cpaper(gpu_id, molecules):
+    num_fitmols = len(molecules) - 1
     cdef list[ROMol*] cpp_mols
-    for file in molfiles:
-        supplier = Chem.SDMolSupplier(file)
-        for mol in supplier:
-            if mol is not None:
-                cpp_mols.push_back(new ROMol(mol.ToBinary()))
-
-    num_fitmols = len(molfiles) - 1
+    for mol in molecules:
+        if mol is not None:
+            cpp_mols.push_back(new ROMol(mol.to_binary()))
+            # cpp_mols.push_back(new ROMol(mol.ToBinary()))
 
     st = timer()
     cdef float** result = paper(gpu_id, cpp_mols)
