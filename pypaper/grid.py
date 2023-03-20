@@ -8,6 +8,7 @@ class Grid:
         self.margin = margin
         self.extent = None
         self.converted_grid = None
+        self.lb = None
 
     def get_bounding_box(self):
         coords_radii = self.mol.get_atomic_coordinates_and_radii()
@@ -19,6 +20,7 @@ class Grid:
         ub = ub.max(axis=0)
         lb -= self.margin
         ub += self.margin
+        self.lb = lb
         return lb, ub
 
     def convert_grid_to_real(self, lb, coords):
