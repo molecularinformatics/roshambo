@@ -59,6 +59,9 @@ class Molecule:
         new_xyz = xyz - centroid
         self.create_molecule(new_xyz)
 
+    def to_binary(self):
+        return self.mol.ToBinary()
+
     def create_molecule(self, coords):
         conf = self.mol.GetConformer()
         for i in range(self.mol.GetNumAtoms()):
