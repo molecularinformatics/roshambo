@@ -15,7 +15,7 @@ class Molecule:
         if opt:
             self.optimize_mol()
 
-    def optimize_mol(self, addHs=True):
+    def optimize_mol(self, addHs=False):
         if addHs:
             self.mol = Chem.AddHs(self.mol)
         AllChem.EmbedMolecule(
