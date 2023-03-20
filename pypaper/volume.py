@@ -3,7 +3,6 @@ import numpy as np
 from pypaper.grid import Grid
 
 KAPPA = 2.41798793102
-PARTIAL_ALPHA = 2.41798793102
 PI = 3.14159265358
 
 
@@ -40,7 +39,7 @@ def calc_multi_analytic_overlap_vol(ref_mol, fit_mol):
 
 def rho(atoms, gcs):
     rt22 = 2.82842712475
-    alphas = -PARTIAL_ALPHA / (atoms[:, 0, 3] ** 2)
+    alphas = -KAPPA / (atoms[:, 0, 3] ** 2)
     diffs = gcs[:, np.newaxis, :] - atoms[:, 0, :3]
     r2s = np.sum(diffs * diffs, axis=-1)
     rhos = rt22 * np.exp(alphas[np.newaxis, :] * r2s)
