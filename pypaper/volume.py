@@ -2,7 +2,7 @@ import numpy as np
 
 from pypaper.grid import Grid
 
-
+KAPPA = 2.41798793102
 PARTIAL_ALPHA = 2.41798793102
 PI = 3.14159265358
 
@@ -17,19 +17,18 @@ def calc_analytic_overlap_vol(ref_mol, fit_mol):
     ref_radii = ref_mol_coords_radii[:, 3]
     fit_radii = fit_mol_coords_radii[:, 3]
 
-    ref_alpha = PARTIAL_ALPHA / (ref_radii**2)
-    fit_alpha = PARTIAL_ALPHA / (fit_radii**2)
-
     dist_sqr = np.sum(
         (ref_coords[:, np.newaxis, :] - fit_coords[np.newaxis, :, :]) ** 2, axis=2
     )
 
-    ref_alpha_matrix = ref_alpha[:, np.newaxis]
-    fit_alpha_matrix = fit_alpha[np.newaxis, :]
-    sum_alpha = ref_alpha_matrix + fit_alpha_matrix
-    k = np.exp(-ref_alpha_matrix * fit_alpha_matrix * dist_sqr / sum_alpha)
-    v = 8 * k * (PI / sum_alpha) ** 1.5
-    overlap = np.sum(v)
+    pi = (4 / 3) * PI * (KAPPA / PI) ** 1.5
+    pij = pi * pi
+    ai = (KAPPA / (ref_radii**2))[:, np.newaxis]
+    aj = (KAPPA / (fit_radii**2))[np.newaxis, :]
+    aij = ai + aj
+    dij = ai * aj * dist_sqr
+    vij = pij * np.exp(-dij / aij) * (PI / aij) ** 1.5
+    overlap = np.sum(vij)
     return overlap
 
 
