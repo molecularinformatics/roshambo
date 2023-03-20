@@ -15,8 +15,8 @@ class Molecule:
         if opt:
             self.optimize_mol()
 
-    def optimize_mol(self, addHs=False):
-        if addHs:
+    def optimize_mol(self, add_hydrogens=False):
+        if add_hydrogens:
             self.mol = Chem.AddHs(self.mol)
         AllChem.EmbedMolecule(
             self.mol, useExpTorsionAnglePrefs=True, useBasicKnowledge=True
@@ -34,12 +34,7 @@ class Molecule:
                 radius = periodic_table.GetRvdw(6)
             else:
                 radius = periodic_table.GetRvdw(j.GetAtomicNum())
-            # coordinates_and_radii.append(
-            #     (pos.x, pos.y, pos.z, Chem.GetPeriodicTable().GetRvdw(j.GetAtomicNum()))
-            # )
-            coordinates_and_radii.append(
-                (pos.x, pos.y, pos.z, radius)
-            )
+            coordinates_and_radii.append((pos.x, pos.y, pos.z, radius))
         return np.array(coordinates_and_radii)
 
     def transform_mol(self, rot, trans):
