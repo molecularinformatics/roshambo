@@ -7,8 +7,8 @@ from rdkit.Chem import AllChem
 from rdkit.Geometry import Point3D
 
 
-class Molecule():
-    def __init__(self, rdkit_mol, opt=True):
+class Molecule:
+    def __init__(self, rdkit_mol, opt=False):
         self.mol = rdkit_mol
         # TODO: test this on xyz or pdb or other file types
         self.name = self.mol.GetProp("_Name")
