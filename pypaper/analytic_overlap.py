@@ -42,8 +42,6 @@ def calc_multi_analytic_overlap_vol(ref_mol, fit_mol):
     return fit_overlap, ref_fit_overlap
 
 
-# dict[tuple: float] can be written as dict[int][int] = float
-# def calc_single_overlap(atom_inds: list, alpha_dict: dict[tuple: float], cross_alpha_distance_dict: dict[tuple: float]):
 def calc_single_overlap(atom_inds, alpha_dict, cross_alpha_distance_dict):
     p = CONSTANT_P ** (len(atom_inds))
     alpha = sum([alpha_dict[i] for i in atom_inds])
@@ -137,11 +135,7 @@ def calc_analytic_overlap_vol_recursive(
             for i in range(len(all_radii))
             for j in range(len(all_radii))
         }
-    # cross_alpha_distance_dict = {
-    #     (i, j): cross_alpha_dict[(i, j)] * distance_dict[(i, j)]**2
-    #     for i in range(len(all_radii))
-    #     for j in range(len(all_radii))
-    # }
+
     cross_alpha_distance_dict = {
         i: {
             j: cross_alpha_dict[(i, j)] * distance_dict[(i, j)] ** 2
