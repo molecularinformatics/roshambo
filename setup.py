@@ -119,20 +119,6 @@ ext = Extension(
     extra_objects=RDKIT_LIBRARIES,
 )
 
-ext2 = Extension(
-    name="coverlap",
-    sources=[
-        module_dir + "/pypaper/coverlap.pyx",
-    ],
-    language="c++",
-    extra_compile_args={
-        "gcc": CCFLAGS + ["-DGPP"] + ["-std=c++11"],
-        "nvcc": CCFLAGS
-        + ["-std=c++11"]
-        + PTXFLAGS
-        + ["--ptxas-options=-v", "-c", "--compiler-options", "-fPIC"],
-    }
-)
 setuptools.setup(
     name="pypaper",
     version="0.0.1",
@@ -154,6 +140,6 @@ setuptools.setup(
     ],
     python_requires=">=3.5",
     package_data={},
-    ext_modules=[ext, ext2],
+    ext_modules=[ext],
     cmdclass={"build_ext": CustomBuildExt},
 )
