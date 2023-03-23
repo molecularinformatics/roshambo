@@ -76,7 +76,6 @@ class GetSimilarityScores:
         mol = Molecule(rdkit_mol, opt=opt)
         mol.center_mol()
         mol.project_mol()
-        mol.write_molfile(file)
         return mol
 
     def run_paper(self, gpu_id=0):
