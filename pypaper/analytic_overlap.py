@@ -13,6 +13,38 @@ PI = 3.14159265358
 CONSTANT_P = (4 / 3) * PI * (KAPPA / PI) ** 1.5
 EXP = math.exp(1)
 
+
+def calc_analytic_overlap_vol(ref_mol, fit_mol):
+    ref_mol_coords_radii = ref_mol.get_atomic_coordinates_and_radii()
+    fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii()
+
+    ref_coords = ref_mol_coords_radii[:, :3]
+    fit_coords = fit_mol_coords_radii[:, :3]
+
+    ref_radii = ref_mol_coords_radii[:, 3]
+    fit_radii = fit_mol_coords_radii[:, 3]
+
+    dist_sqr = np.sum(
+        (ref_coords[:, np.newaxis, :] - fit_coords[np.newaxis, :, :]) ** 2, axis=2
+    )
+
+    pi = (4 / 3) * PI * (KAPPA / PI) ** 1.5
+    pij = pi * pi
+    ai = (KAPPA / (ref_radii**2))[:, np.newaxis]
+    aj = (KAPPA / (fit_radii**2))[np.newaxis, :]
+    aij = ai + aj
+    dij = ai * aj * dist_sqr
+    vij = pij * np.exp(-dij / aij) * (PI / aij) ** 1.5
+    overlap = np.sum(vij)
+    return overlap
+
+
+def calc_multi_analytic_overlap_vol(ref_mol, fit_mol):
+    fit_overlap = calc_analytic_overlap_vol(fit_mol, fit_mol)
+    ref_fit_overlap = calc_analytic_overlap_vol(ref_mol, fit_mol)
+    return fit_overlap, ref_fit_overlap
+
+
 # dict[tuple: float] can be written as dict[int][int] = float
 # def calc_single_overlap(atom_inds: list, alpha_dict: dict[tuple: float], cross_alpha_distance_dict: dict[tuple: float]):
 def calc_single_overlap(atom_inds, alpha_dict, cross_alpha_distance_dict):
