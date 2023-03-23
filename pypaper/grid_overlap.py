@@ -30,7 +30,7 @@ def calc_gaussian_overlap_vol(ref_mol, fit_mol, grid, use_carbon_radii):
 
 
 def calc_multi_gaussian_overlap_vol(fit_mol, res, margin, ref_grid, ref_mol, use_carbon_radii):
-    fit_grid = Grid(fit_mol, res=res, margin=margin)
+    fit_grid = Grid(fit_mol, res=res, margin=margin, use_carbon_radii=use_carbon_radii)
     fit_grid.create_grid()
     fit_overlap = calc_gaussian_overlap_vol(fit_mol, fit_mol, fit_grid, use_carbon_radii)
 
