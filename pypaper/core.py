@@ -98,7 +98,6 @@ class GetSimilarityScores:
             )
 
     def transform_molecules(self, write_to_file=False):
-        # TODO: replace this since PAPER already reads molecules
         for mol, rot, trans in zip(self.dataset_mols, self.rotation, self.translation):
             xyz_trans = mol.transform_mol(rot, trans)
             mol.create_molecule(xyz_trans)
@@ -122,7 +121,15 @@ class GetSimilarityScores:
         return volume * grid.res**3
 
     def calculate_tanimoto(
-        self, volume_type="analytic", res=0.4, margin=0.4, save_to_file=False
+        self,
+        volume_type="analytic",
+        n=2,
+        proxy_cutoff=None,
+        epsilon=0.1,
+        res=0.4,
+        margin=0.4,
+        use_carbon_radii=False,
+        save_to_file=False,
     ):
         if volume_type == "analytic":
             ref_overlap = calc_analytic_overlap_vol_recursive(
