@@ -2,13 +2,10 @@ import time
 import math
 
 import numpy as np
-import numba
-from numba import typed, njit, prange, jit
 
 from itertools import combinations
 
 KAPPA = 2.41798793102
-PARTIAL_ALPHA = 2.41798793102
 PI = 3.14159265358
 CONSTANT_P = (4 / 3) * PI * (KAPPA / PI) ** 1.5
 EXP = math.exp(1)
@@ -136,8 +133,14 @@ def calc_analytic_overlap_vol_iterative(ref_mol, fit_mol, n=6):
 
 
 def _calc_overlap(
-    atom_inds, rem_ind, len_full, len_ref, n, alpha_dict, cross_alpha_distance_dict,
-    cross_distance_bool_dict
+    atom_inds,
+    rem_ind,
+    len_full,
+    len_ref,
+    n,
+    alpha_dict,
+    cross_alpha_distance_dict,
+    cross_distance_bool_dict,
 ):
     if n == 1:
         return calc_single_overlap(atom_inds, alpha_dict, cross_alpha_distance_dict)
@@ -151,7 +154,7 @@ def _calc_overlap(
                 1,
                 alpha_dict,
                 cross_alpha_distance_dict,
-                cross_distance_bool_dict
+                cross_distance_bool_dict,
             )
             if len(atom_inds) > 1
             else 0
@@ -171,7 +174,7 @@ def _calc_overlap(
                     n - 1,
                     alpha_dict,
                     cross_alpha_distance_dict,
-                    cross_distance_bool_dict
+                    cross_distance_bool_dict,
                 )
         return main_overlap - higher_order
 
