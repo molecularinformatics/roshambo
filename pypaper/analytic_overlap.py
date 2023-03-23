@@ -243,3 +243,24 @@ def calc_analytic_overlap_vol_recursive(
         )
     return overlaps
 
+
+def calc_multi_analytic_overlap_vol_recursive(
+    ref_mol, fit_mol, n=2, proxy_cutoff=None, epsilon=0.1, use_carbon_radii=False
+):
+    fit_overlap = calc_analytic_overlap_vol_recursive(
+        fit_mol,
+        fit_mol,
+        n=n,
+        proxy_cutoff=proxy_cutoff,
+        epsilon=epsilon,
+        use_carbon_radii=use_carbon_radii,
+    )
+    ref_fit_overlap = calc_analytic_overlap_vol_recursive(
+        ref_mol,
+        fit_mol,
+        n=n,
+        proxy_cutoff=proxy_cutoff,
+        epsilon=epsilon,
+        use_carbon_radii=use_carbon_radii,
+    )
+    return fit_overlap, ref_fit_overlap
