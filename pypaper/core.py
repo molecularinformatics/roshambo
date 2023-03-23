@@ -102,7 +102,7 @@ class GetSimilarityScores:
             mol.create_molecule(xyz_trans)
             self.transformed_molecules.append(mol)
             if write_to_file:
-                mol.write_molfile(f"{self.working_dir}/{mol.name}.sdf")
+                mol.write_molfile(f"{self.working_dir}/{mol.name}_transformed.sdf")
 
     def calculate_volume(self, grid, mol):
         gcs = grid.converted_grid
