@@ -18,7 +18,7 @@ EXP = math.exp(1)
 def calc_single_overlap(atom_inds, alpha_dict, cross_alpha_distance_dict):
     p = CONSTANT_P ** (len(atom_inds))
     alpha = sum([alpha_dict[i] for i in atom_inds])
-    k = [cross_alpha_distance_dict[(i, j)] for i, j in combinations(atom_inds, 2)]
+    k = [cross_alpha_distance_dict[i][j] for i, j in combinations(atom_inds, 2)]
     k_exp = EXP ** (-sum(k) / alpha)
     return p * k_exp * (PI / alpha) ** 1.5
 
@@ -144,11 +144,19 @@ def _calc_overlap(
         return main_overlap - higher_order
 
 
-def calc_analytic_overlap_vol_recursive(ref_mol, fit_mol, n=6, proxy_cutoff=None, epsilon=0.1, use_carbon_radii=False):
-    ref_mol_coords_radii = ref_mol.get_atomic_coordinates_and_radii(use_carbon_radii=use_carbon_radii)
-    fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii(use_carbon_radii=use_carbon_radii)
-    # print("ref", [i[3] for i in ref_mol_coords_radii])
-    # print("fit", [i[3] for i in fit_mol_coords_radii])
+def calc_analytic_overlap_vol_recursive(
+    ref_mol, fit_mol, n=6, proxy_cutoff=None, epsilon=0.1, use_carbon_radii=False
+):
+    # TODO: add a restriction on n to be even
+    # TODO: add a restriction on n to be at max, the smaller of the sizes of the two molecules
+    # TODO: change carbon_radii calculations to be much faster
+    # TODO: precompute alpha values based on atomic radii
+    ref_mol_coords_radii = ref_mol.get_atomic_coordinates_and_radii(
+        use_carbon_radii=use_carbon_radii
+    )
+    fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii(
+        use_carbon_radii=use_carbon_radii
+    )
     ref_len = len(ref_mol_coords_radii)
     all_radii = np.concatenate([ref_mol_coords_radii, fit_mol_coords_radii])
     alpha_dict = {i: KAPPA / j[3] ** 2 for i, j in enumerate(all_radii)}
@@ -157,13 +165,6 @@ def calc_analytic_overlap_vol_recursive(ref_mol, fit_mol, n=6, proxy_cutoff=None
         for i in range(len(all_radii))
         for j in range(len(all_radii))
     }
-    # cross_alpha_dict = {
-    #     i:
-    #         {
-    #         j: alpha_dict[i] * alpha_dict[j] for j in range(len(all_radii))
-    #         }
-    #     for i in range(len(all_radii))
-    # }
     distance_dict = {
         (i, j): np.linalg.norm(all_radii[i][:3] - all_radii[j][:3])
         for i in range(len(all_radii))
@@ -181,10 +182,17 @@ def calc_analytic_overlap_vol_recursive(ref_mol, fit_mol, n=6, proxy_cutoff=None
             for i in range(len(all_radii))
             for j in range(len(all_radii))
         }
+    # cross_alpha_distance_dict = {
+    #     (i, j): cross_alpha_dict[(i, j)] * distance_dict[(i, j)]**2
+    #     for i in range(len(all_radii))
+    #     for j in range(len(all_radii))
+    # }
     cross_alpha_distance_dict = {
-        (i, j): cross_alpha_dict[(i, j)] * distance_dict[(i, j)]**2
+        i: {
+            j: cross_alpha_dict[(i, j)] * distance_dict[(i, j)] ** 2
+            for j in range(len(all_radii))
+        }
         for i in range(len(all_radii))
-        for j in range(len(all_radii))
     }
     overlaps = 0
     for ind in range(len(fit_mol_coords_radii)):
@@ -196,7 +204,7 @@ def calc_analytic_overlap_vol_recursive(ref_mol, fit_mol, n=6, proxy_cutoff=None
             n,
             alpha_dict,
             cross_alpha_distance_dict,
-            cross_distance_bool_dict
+            cross_distance_bool_dict,
         )
     return overlaps
 
