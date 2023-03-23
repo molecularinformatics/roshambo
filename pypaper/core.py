@@ -112,7 +112,7 @@ class GetSimilarityScores:
         epsilon=0.1,
         res=0.4,
         margin=0.4,
-        use_carbon_radii=False,
+        use_carbon_radii=True,
         save_to_file=False,
     ):
         if volume_type == "analytic":
