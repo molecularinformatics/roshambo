@@ -18,11 +18,15 @@ from rdkit import Chem
 
 from pypaper.grid import Grid
 from pypaper.cpaper import cpaper
-from pypaper.volume import (
-    calc_analytic_overlap_vol,
+from pypaper.grid_overlap import (
     calc_gaussian_overlap_vol,
-    calc_multi_analytic_overlap_vol,
     calc_multi_gaussian_overlap_vol,
+)
+from pypaper.analytic_overlap import (
+    calc_analytic_overlap_vol,
+    calc_multi_analytic_overlap_vol,
+    calc_analytic_overlap_vol_recursive,
+    calc_multi_analytic_overlap_vol_recursive,
 )
 from pypaper.structure import Molecule
 from pypaper.utilities import split_sdf_file
@@ -121,32 +125,32 @@ class GetSimilarityScores:
         self, volume_type="analytic", res=0.4, margin=0.4, save_to_file=False
     ):
         if volume_type == "analytic":
-            st = time.time()
-            ref_overlap = calc_analytic_overlap_vol(self.ref_mol, self.ref_mol)
+            ref_overlap = calc_analytic_overlap_vol_recursive(
+                self.ref_mol,
+                self.ref_mol,
+                n=n,
+                proxy_cutoff=proxy_cutoff,
+                epsilon=epsilon,
+                use_carbon_radii=use_carbon_radii,
+            )
+            # ref_overlap = calc_analytic_overlap_vol(self.ref_mol, self.ref_mol)
             inputs = [(self.ref_mol, fit_mol) for fit_mol in self.transformed_molecules]
 
             with Pool(processes=cpu_count()) as pool:
-                outputs = pool.starmap(calc_multi_analytic_overlap_vol, inputs)
-            et = time.time()
-            print(f"Analytic volume calculation took: {et - st}")
+                # outputs = pool.starmap(calc_multi_analytic_overlap_vol, inputs)
+                outputs = pool.starmap(
+                    calc_multi_analytic_overlap_vol_recursive, inputs
+                )
 
         elif volume_type == "gaussian":
             st = time.time()
             ref_grid = Grid(self.ref_mol, res=res, margin=margin)
             ref_grid.create_grid()
             ref_overlap = calc_gaussian_overlap_vol(
-                self.ref_mol,
-                self.ref_mol,
-                ref_grid,
+                self.ref_mol, self.ref_mol, ref_grid, use_carbon_radii
             )
             inputs = [
-                (
-                    fit_mol,
-                    res,
-                    margin,
-                    ref_grid,
-                    self.ref_mol,
-                )
+                (fit_mol, res, margin, ref_grid, self.ref_mol, use_carbon_radii)
                 for fit_mol in self.transformed_molecules
             ]
 
