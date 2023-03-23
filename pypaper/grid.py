@@ -2,16 +2,17 @@ import numpy as np
 
 
 class Grid:
-    def __init__(self, mol, res=0.4, margin=0.4):
+    def __init__(self, mol, res, margin, use_carbon_radii):
         self.mol = mol
         self.res = res
         self.margin = margin
         self.extent = None
         self.converted_grid = None
         self.lb = None
+        self.use_carbon_radii = use_carbon_radii
 
     def get_bounding_box(self):
-        coords_radii = self.mol.get_atomic_coordinates_and_radii()
+        coords_radii = self.mol.get_atomic_coordinates_and_radii(self.use_carbon_radii)
         coords = coords_radii[:, :3]
         radii = coords_radii[:, 3]
         lb = coords - radii[:, None]

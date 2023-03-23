@@ -134,8 +134,9 @@ class GetSimilarityScores:
                 )
 
         elif volume_type == "gaussian":
-            st = time.time()
-            ref_grid = Grid(self.ref_mol, res=res, margin=margin)
+            ref_grid = Grid(
+                self.ref_mol, res=res, margin=margin, use_carbon_radii=use_carbon_radii
+            )
             ref_grid.create_grid()
             ref_overlap = calc_gaussian_overlap_vol(
                 self.ref_mol, self.ref_mol, ref_grid, use_carbon_radii
