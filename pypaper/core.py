@@ -104,7 +104,6 @@ class GetSimilarityScores:
             if write_to_file:
                 mol.write_molfile(f"{self.working_dir}/{mol.name}_transformed.sdf")
 
-
     def calculate_tanimoto(
         self,
         volume_type="analytic",
@@ -126,7 +125,7 @@ class GetSimilarityScores:
                 use_carbon_radii=use_carbon_radii,
             )
             # ref_overlap = calc_analytic_overlap_vol(self.ref_mol, self.ref_mol)
-            inputs = [(self.ref_mol, fit_mol) for fit_mol in self.transformed_molecules]
+            inputs = [(self.ref_mol, fit_mol, n, proxy_cutoff, epsilon, use_carbon_radii) for fit_mol in self.transformed_molecules]
 
             with Pool(processes=cpu_count()) as pool:
                 # outputs = pool.starmap(calc_multi_analytic_overlap_vol, inputs)
