@@ -115,6 +115,7 @@ class GetSimilarityScores:
         res=0.4,
         margin=0.4,
         use_carbon_radii=True,
+        color=False,
         save_to_file=False,
     ):
         if volume_type == "analytic":
@@ -159,6 +160,14 @@ class GetSimilarityScores:
                 "Invalid volume_type argument. Must be 'analytic' or 'gaussian'."
             )
 
+        if color:
+            color_ts = []
+            for fit_mol in self.transformed_molecules:
+                t = color_tanimoto(self.ref_mol.mol, fit_mol.mol)
+                color_ts.append(t)
+        else:
+            color_ts = None
+
         outputs = np.array(outputs)
         full_fit_overlap = outputs[:, 0]
         full_ref_fit_overlap = outputs[:, 1]
@@ -167,15 +176,18 @@ class GetSimilarityScores:
             full_ref_overlap + full_fit_overlap - full_ref_fit_overlap
         )
 
-        df = pd.DataFrame(
-            {
+        df_data = {
                 "Molecule": [
                     os.path.basename(path).split(".")[0] for path in self.dataset_files
                 ],
                 "Overlap": full_ref_fit_overlap,
                 "Tanimoto": full_tanimoto,
             }
-        )
+        if color_ts is not None:
+            df_data["ColorTanimoto"] = color_ts
+            df_data["ComboTanimoto"] = df_data["Tanimoto"] + df_data["ColorTanimoto"]
+
+        df = pd.DataFrame(df_data)
         df.sort_values(by="Tanimoto", ascending=False, inplace=True)
         if save_to_file:
             df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
