@@ -14,6 +14,7 @@ from multiprocessing import Pool, cpu_count
 from scipy.spatial.transform import Rotation
 
 from rdkit import Chem
+from rdkit.Chem import AllChem
 
 from pypaper.grid import Grid
 from pypaper.cpaper import cpaper
@@ -95,13 +96,15 @@ class GetSimilarityScores:
                 else t.reshape(1, 3)
             )
 
-    def transform_molecules(self, write_to_file=False):
+    def transform_molecules(self, write_to_file=False, filename="pypaper.sdf"):
         for mol, rot, trans in zip(self.dataset_mols, self.rotation, self.translation):
             xyz_trans = mol.transform_mol(rot, trans)
             mol.create_molecule(xyz_trans)
             self.transformed_molecules.append(mol)
-            if write_to_file:
-                mol.write_molfile(f"{self.working_dir}/{mol.name}_transformed.sdf")
+        if write_to_file:
+            sd_writer = AllChem.SDWriter(f"{self.working_dir}/{filename}")
+            for mol in [self.ref_mol] + self.transformed_molecules:
+                sd_writer.write(mol.mol)
 
     def calculate_tanimoto(
         self,
