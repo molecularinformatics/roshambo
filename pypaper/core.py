@@ -185,7 +185,7 @@ class GetSimilarityScores:
                     os.path.basename(path).split(".")[0] for path in self.dataset_files
                 ],
                 "Overlap": full_ref_fit_overlap,
-                "Tanimoto": full_tanimoto,
+                "ShapeTanimoto": full_tanimoto,
             }
         if color_ts is not None:
             df_data["ColorTanimoto"] = color_ts
