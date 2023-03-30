@@ -34,7 +34,8 @@ def convert_oeb_to_sdf(oeb_file, sdf_file, working_dir=None):
         oechem.OEThrow.Fatal(f"Unable to open {oeb_file}")
 
 
-def split_sdf_file(input_file, output_dir, max_mols_per_file=20, cleanup=False):
+def split_sdf_file(input_file, output_dir, max_mols_per_file=20, ignore_hydrogens=False,
+                   cleanup=False):
     """
     Split an sdf file into multiple files using RDKit.
 
@@ -48,7 +49,7 @@ def split_sdf_file(input_file, output_dir, max_mols_per_file=20, cleanup=False):
         output_files (list): list of output file paths
     """
     name = os.path.basename(input_file).split(".sdf")[0]
-    suppl = Chem.SDMolSupplier(input_file)
+    suppl = Chem.SDMolSupplier(input_file, removeHs=ignore_hydrogens)
     count = 0
     mol_count = 0
     writer = None
