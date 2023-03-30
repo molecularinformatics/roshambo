@@ -118,7 +118,9 @@ class GetSimilarityScores:
         margin=0.4,
         use_carbon_radii=True,
         color=False,
-        save_to_file=False,
+        sort_by="ShapeTanimoto",
+        write_to_file=False,
+        filename="hits.sdf"
     ):
         if volume_type == "analytic":
             ref_overlap = calc_analytic_overlap_vol_recursive(
@@ -190,7 +192,20 @@ class GetSimilarityScores:
             df_data["ComboTanimoto"] = df_data["Tanimoto"] + df_data["ColorTanimoto"]
 
         df = pd.DataFrame(df_data)
-        df.sort_values(by="Tanimoto", ascending=False, inplace=True)
-        if save_to_file:
-            df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
+        df.sort_values(by=sort_by, ascending=False, inplace=True)
+        df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
+
+        ordered_mol_names = df["Molecule"].tolist()
+        mol_dict = {_mol.mol.GetProp("_Name"): _mol for _mol in self.transformed_molecules}
+        reordered_mol_list = []
+        for name in ordered_mol_names:
+            mol = mol_dict.get(name)
+            if mol is not None:
+                reordered_mol_list.append(mol)
+
+        if write_to_file:
+            sd_writer = AllChem.SDWriter(f"{self.working_dir}/{filename}")
+            for mol in [self.ref_mol] + reordered_mol_list:
+                sd_writer.write(mol.mol)
+
         return df
