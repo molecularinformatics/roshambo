@@ -54,7 +54,8 @@ class GetSimilarityScores:
                 self.dataset_files[0],
                 output_dir=self.working_dir,
                 max_mols_per_file=1,
-                cleanup=True,
+                ignore_hydrogens=ignore_hydrogens,
+                cleanup=False,
             )
 
         # TODO:Check if saving all molecules into numpy arrays will cause memory leaks
