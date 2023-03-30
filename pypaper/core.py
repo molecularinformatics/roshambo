@@ -28,6 +28,7 @@ from pypaper.analytic_overlap import (
     calc_analytic_overlap_vol_recursive,
     calc_multi_analytic_overlap_vol_recursive,
 )
+from pypaper.pharmacophore import color_tanimoto
 from pypaper.structure import Molecule
 from pypaper.utilities import split_sdf_file
 
