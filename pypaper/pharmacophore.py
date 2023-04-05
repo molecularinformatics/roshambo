@@ -57,6 +57,38 @@ def calc_single_pharm_overlap(p1, p2):
     return vol
 
 
+def calc_pharm_overlap(ref_pharm, fit_pharm):
+    volume = 0
+    for i, p1 in enumerate(ref_pharm):
+        for j, p2 in enumerate(fit_pharm):
+            if p1[0] == p2[0]:
+                vol = calc_single_pharm_overlap(p1, p2)
+                # print(p1[0], vol)
+                volume += vol
+    return volume
+
+
+# def calc_pharm_overlap(ref_pharm, fit_pharm):
+#     volume = 0
+#     for i, p1 in enumerate(ref_pharm):
+#         vols = []
+#         for j, p2 in enumerate(fit_pharm):
+#             if p1[0] == p2[0]:
+#                 vol = calc_single_pharm_overlap(p1, p2)
+#                 vols.append(vol)
+#                 # print(p1[0], vol)
+#         if vols:
+#             volume += np.max(vols)
+#     return volume
+
+
+def calc_multi_pharm_overlap(fit_mol, ref_pharm):
+    fit_pharm = calc_pharmacophore(fit_mol.mol)
+    fit_overlap = calc_pharm_overlap(fit_pharm, fit_pharm)
+    ref_fit_overlap = calc_pharm_overlap(ref_pharm, fit_pharm)
+    return fit_overlap, ref_fit_overlap
+
+
 def color_tanimoto(ref_mol, fit_mol):
     ref_pharm = calc_pharmacophore(ref_mol)
     fit_pharm = calc_pharmacophore(fit_mol)
