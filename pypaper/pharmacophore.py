@@ -50,7 +50,7 @@ def calc_pharmacophore(rdkit_mol):
     return pharmacophore
 
 
-def calc_single_volume_overlap(p1, p2):
+def calc_single_pharm_overlap(p1, p2):
     r2 = (p1[2][0] - p2[2][0])**2 + (p1[2][1] - p2[2][1])**2 + (p1[2][2] - p2[2][2])**2
     vol = 7.999999999 * pow(PI / (p1[3] + p2[3]), 1.5)
     vol *= np.exp(-(p1[3] * p2[3]) * r2 / (p1[3] + p2[3]))
