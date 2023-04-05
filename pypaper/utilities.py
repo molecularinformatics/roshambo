@@ -82,3 +82,56 @@ def split_sdf_file(input_file, output_dir, max_mols_per_file=20, ignore_hydrogen
     if cleanup:
         os.remove(input_file)
     return output_files
+
+
+def prepare_mols(file_names, opt=False, ignore_hydrogens=False, num_conformers=10, random_seed=999):
+    used_names = {}
+    processed_mols = []
+    mol_names = []
+    sd_writer = Chem.SDWriter("mols.sdf")
+    for file_name in file_names:
+        if not os.path.isfile(file_name):
+            continue
+        suppl = Chem.SDMolSupplier(file_name, removeHs=ignore_hydrogens)
+        print(len(suppl))
+        for rdkit_mol in suppl:
+            name = rdkit_mol.GetProp('_Name')
+            if name in used_names:
+                used_names[name] += 1
+                new_name = f"{name}_{used_names[name]}"
+            else:
+                used_names[name] = 0
+                new_name = f"{name}_0"
+            rdkit_mol.SetProp('_Name', new_name)
+            mols = process_molecule(rdkit_mol, opt=opt, num_conformers=num_conformers, random_seed=random_seed)
+            for mol in mols:
+                processed_mols.append(mol)
+                mol_names.append(mol.mol.GetProp('_Name'))
+                sd_writer.write(mol.mol)
+    sd_writer.close()
+    return processed_mols, mol_names
+
+
+def process_molecule(rdkit_mol, opt, num_conformers=10, random_seed=999):
+    mol = Molecule(rdkit_mol, opt=opt)
+    mol_name = rdkit_mol.GetProp('_Name')
+    mol.center_mol()
+    mol.project_mol()
+    new_mol = copy.deepcopy(mol)
+    if num_conformers:
+        new_mol.generate_conformers(num_conformers, random_seed)
+        conformers = []
+        for i in range(num_conformers):
+            conformer_name = f"{mol_name}_{i+1}"
+            conformer_mol = Chem.Mol(new_mol.mol)
+            conformer_mol.RemoveAllConformers()
+            conformer_mol.AddConformer(Chem.Conformer(new_mol.mol.GetConformer(i)))
+            conformer_mol.SetProp("_Name", conformer_name)
+            conformer_mol = Molecule(conformer_mol)
+            conformer_mol.center_mol()
+            conformer_mol.project_mol()
+            conformers.append(conformer_mol)
+        mol.mol.SetProp("_Name", f"{mol_name}_0")
+        return [mol] + conformers
+    else:
+        return [mol]
