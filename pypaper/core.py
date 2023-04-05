@@ -72,14 +72,6 @@ class GetSimilarityScores:
         self.translation = np.array([])
         self.transformed_molecules = []
 
-    @staticmethod
-    def _process_molecule(file, opt, ignore_hydrogens):
-        rdkit_mol = Chem.MolFromMolFile(file, removeHs=ignore_hydrogens)
-        mol = Molecule(rdkit_mol, opt=opt)
-        mol.center_mol()
-        mol.project_mol()
-        return mol
-
     def run_paper(self, gpu_id=0):
         molecules = [self.ref_mol] + self.dataset_mols
         self.transformation_arrays = cpaper(gpu_id, molecules)
