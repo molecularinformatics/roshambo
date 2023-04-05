@@ -281,13 +281,12 @@ class GetSimilarityScores:
         del df["Prefix"]
         df.to_csv(f"{self.working_dir}/pypaper.csv", index=False, sep="\t")
 
-        ordered_mol_names = df["Molecule"].tolist()
-        mol_dict = {_mol.mol.GetProp("_Name"): _mol for _mol in self.transformed_molecules}
-        reordered_mol_list = []
-        for name in ordered_mol_names:
-            mol = mol_dict.get(name)
-            if mol is not None:
-                reordered_mol_list.append(mol)
+        mol_dict = {
+            _mol.mol.GetProp("_Name"): _mol for _mol in self.transformed_molecules
+        }
+        reordered_mol_list = [
+            mol_dict[name] for name in df["Molecule"] if name in mol_dict
+        ]
 
         if write_to_file:
             sd_writer = AllChem.SDWriter(f"{self.working_dir}/{filename}")
