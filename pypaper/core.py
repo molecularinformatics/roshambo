@@ -137,7 +137,8 @@ class GetSimilarityScores:
         color=False,
         sort_by="ShapeTanimoto",
         write_to_file=False,
-        filename="hits.sdf"
+        max_conformers=1,
+        filename="hits.sdf",
     ):
         if volume_type == "analytic":
             ref_overlap = calc_analytic_overlap_vol_recursive(
@@ -272,8 +273,13 @@ class GetSimilarityScores:
         #     df_data["ComboTanimoto"] = df_data["ShapeTanimoto"] + df_data["ColorTanimoto"]
 
         df = pd.DataFrame(df_data)
-        df.sort_values(by=sort_by, ascending=False, inplace=True)
-        df.to_csv(f"{self.working_dir}/tanimoto.csv", index=False)
+        df["Prefix"] = df["Molecule"].str.split("_").str[0]
+        df = df.sort_values(by=["Prefix", sort_by], ascending=[True, False])
+        idx = df.groupby("Prefix").apply(lambda x: x.nlargest(max_conformers, sort_by)).index.levels[
+            1]
+        df = df.loc[idx].sort_values(by=sort_by, ascending=False).round(3)
+        del df["Prefix"]
+        df.to_csv(f"{self.working_dir}/pypaper.csv", index=False, sep="\t")
 
         ordered_mol_names = df["Molecule"].tolist()
         mol_dict = {_mol.mol.GetProp("_Name"): _mol for _mol in self.transformed_molecules}
