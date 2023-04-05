@@ -96,7 +96,6 @@ def prepare_mols(file_names, opt=False, ignore_hydrogens=False, num_conformers=1
         if not os.path.isfile(file_name):
             continue
         suppl = Chem.SDMolSupplier(file_name, removeHs=ignore_hydrogens)
-        print(len(suppl))
         for rdkit_mol in suppl:
             name = rdkit_mol.GetProp('_Name')
             if name in used_names:
