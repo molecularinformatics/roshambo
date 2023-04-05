@@ -28,9 +28,15 @@ from pypaper.analytic_overlap import (
     calc_analytic_overlap_vol_recursive,
     calc_multi_analytic_overlap_vol_recursive,
 )
+from pypaper.scores import calc_tanimoto, calc_tversky
 from pypaper.pharmacophore import color_tanimoto
+from pypaper.pharmacophore import (
+    calc_pharmacophore,
+    calc_pharm_overlap,
+    calc_multi_pharm_overlap,
+)
 from pypaper.structure import Molecule
-from pypaper.utilities import split_sdf_file
+from pypaper.utilities import split_sdf_file, prepare_mols
 
 
 class GetSimilarityScores:
