@@ -230,8 +230,25 @@ class GetSimilarityScores:
         full_fit_overlap = outputs[:, 0]
         full_ref_fit_overlap = outputs[:, 1]
         full_ref_overlap = np.ones_like(full_fit_overlap) * ref_overlap
-        full_tanimoto = full_ref_fit_overlap / (
-            full_ref_overlap + full_fit_overlap - full_ref_fit_overlap
+        # full_tanimoto = full_ref_fit_overlap / (
+        #     full_ref_overlap + full_fit_overlap - full_ref_fit_overlap
+        # )
+        shape_tanimoto = calc_tanimoto(
+            full_ref_overlap, full_fit_overlap, full_ref_fit_overlap
+        )
+        shape_fit_tversky = calc_tversky(
+            full_ref_overlap,
+            full_fit_overlap,
+            full_ref_fit_overlap,
+            alpha=0.05,
+            beta=0.95,
+        )
+        shape_ref_tversky = calc_tversky(
+            full_ref_overlap,
+            full_fit_overlap,
+            full_ref_fit_overlap,
+            alpha=0.95,
+            beta=0.05,
         )
 
         df_data = {
