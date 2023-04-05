@@ -96,7 +96,7 @@ class GetSimilarityScores:
             mol.create_molecule(xyz_trans)
             self.transformed_molecules.append(mol)
 
-    def calculate_tanimoto(
+    def calculate_scores(
         self,
         volume_type="analytic",
         n=2,
