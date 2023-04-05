@@ -120,10 +120,10 @@ class GetSimilarityScores:
             xyz_trans = mol.transform_mol(rot, trans)
             mol.create_molecule(xyz_trans)
             self.transformed_molecules.append(mol)
-        if write_to_file:
-            sd_writer = AllChem.SDWriter(f"{self.working_dir}/{filename}")
-            for mol in [self.ref_mol] + self.transformed_molecules:
-                sd_writer.write(mol.mol)
+        # if write_to_file:
+        #     sd_writer = AllChem.SDWriter(f"{self.working_dir}/{filename}")
+        #     for mol in [self.ref_mol] + self.transformed_molecules:
+        #         sd_writer.write(mol.mol)
 
     def calculate_tanimoto(
         self,
@@ -222,7 +222,14 @@ class GetSimilarityScores:
 
         if write_to_file:
             sd_writer = AllChem.SDWriter(f"{self.working_dir}/{filename}")
+            df_columns = df.columns
+            df = df.set_index("Molecule")
             for mol in [self.ref_mol] + reordered_mol_list:
+                if mol != self.ref_mol:
+                    mol_props = df.loc[mol.mol.GetProp("_Name"), :]
+                    for col in df_columns[1:]:
+                        mol_prop = str(mol_props[col])
+                        mol.mol.SetProp("PYPAPER_" + col, mol_prop)
                 sd_writer.write(mol.mol)
 
         return df
