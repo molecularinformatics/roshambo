@@ -41,11 +41,28 @@ class GetSimilarityScores:
         # split_dataset_files=False,
         opt=False,
         ignore_hydrogens=False,
+        num_conformers=10,
+        random_seed=999,
         working_dir=None,
     ):
         self.working_dir = working_dir or os.getcwd()
         self.ref_file = f"{self.working_dir}/{ref_file}"
         self.dataset_files = glob.glob(f"{self.working_dir}/{dataset_files_pattern}")
+
+        ref_mol, _ = prepare_mols(
+            [self.ref_file],
+            opt=opt,
+            ignore_hydrogens=ignore_hydrogens,
+            num_conformers=0,
+        )
+        self.ref_mol = ref_mol[0]
+        self.dataset_mols, self.dataset_names = prepare_mols(
+            self.dataset_files,
+            opt=opt,
+            ignore_hydrogens=ignore_hydrogens,
+            num_conformers=num_conformers,
+            random_seed=random_seed,
+        )
 
         # TODO: this only works if the input is an sdf file, what about other mol format?
         # if split_dataset_files:
@@ -59,13 +76,13 @@ class GetSimilarityScores:
         #     )
 
         # TODO:Check if saving all molecules into numpy arrays will cause memory leaks
-        self.ref_mol = self._process_molecule(
-            self.ref_file, opt=opt, ignore_hydrogens=ignore_hydrogens
-        )
-        self.dataset_mols = [
-            self._process_molecule(file, opt=opt, ignore_hydrogens=ignore_hydrogens)
-            for file in self.dataset_files
-        ]
+        # self.ref_mol = self._process_molecule(
+        #     self.ref_file, opt=opt, ignore_hydrogens=ignore_hydrogens
+        # )
+        # self.dataset_mols = [
+        #     self._process_molecule(file, opt=opt, ignore_hydrogens=ignore_hydrogens)
+        #     for file in self.dataset_files
+        # ]
 
         self.transformation_arrays = None
         self.rotation = np.array([])
