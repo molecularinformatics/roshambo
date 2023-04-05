@@ -62,6 +62,10 @@ class Molecule:
         new_xyz = xyz - centroid
         self.create_molecule(new_xyz)
 
+    def generate_conformers(self, num_conformers=10, random_seed=999):
+        AllChem.EmbedMultipleConfs(self.mol, numConfs=num_conformers, randomSeed=random_seed, clearConfs=True, numThreads=0)
+        # AllChem.UFFOptimizeMoleculeConfs(self.mol, numThreads=0)
+
     def to_binary(self):
         return self.mol.ToBinary()
 
