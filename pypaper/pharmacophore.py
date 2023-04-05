@@ -98,17 +98,17 @@ def color_tanimoto(ref_mol, fit_mol):
     for i, p1 in enumerate(ref_pharm):
         for j, p2 in enumerate(ref_pharm):
             if p1[0] == p2[0]:
-                vol = calc_single_volume_overlap(p1, p2)
+                vol = calc_single_pharm_overlap(p1, p2)
                 ref_volume += vol
     for i, p1 in enumerate(fit_pharm):
         for j, p2 in enumerate(fit_pharm):
             if p1[0] == p2[0]:
-                vol = calc_single_volume_overlap(p1, p2)
+                vol = calc_single_pharm_overlap(p1, p2)
                 fit_volume += vol
     for p1 in ref_pharm:
         for p2 in fit_pharm:
             if p1[0] == p2[0]:
-                v = calc_single_volume_overlap(p1, p2)
+                v = calc_single_pharm_overlap(p1, p2)
                 # print(p1[0], p1[1], p2[1], v)
                 overlap += v
     # print(overlap, ref_volume, fit_volume)
