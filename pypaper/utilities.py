@@ -1,6 +1,9 @@
 import os
+import copy
 
 from rdkit import Chem
+
+from pypaper.structure import Molecule
 
 try:
     from openeye import oechem
