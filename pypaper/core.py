@@ -13,7 +13,6 @@ from multiprocessing import Pool, cpu_count
 
 from scipy.spatial.transform import Rotation
 
-from rdkit import Chem
 from rdkit.Chem import AllChem
 
 from pypaper.grid import Grid
@@ -26,7 +25,6 @@ from pypaper.analytic_overlap import (
     calc_analytic_overlap_vol_recursive,
     calc_multi_analytic_overlap_vol_recursive,
 )
-from pypaper.scores import calc_tanimoto, calc_tversky
 from pypaper.pharmacophore import (
     calc_pharmacophore,
     calc_pharm_overlap,
