@@ -30,7 +30,7 @@ from pypaper.pharmacophore import (
     calc_pharm_overlap,
     calc_multi_pharm_overlap,
 )
-from pypaper.structure import Molecule
+from pypaper.scores import scores
 from pypaper.utilities import prepare_mols
 
 
@@ -124,7 +124,7 @@ class GetSimilarityScores:
             ]
 
             with Pool(processes=cpu_count()) as pool:
-                outputs = pool.starmap(
+                shape_outputs = pool.starmap(
                     calc_multi_analytic_overlap_vol_recursive, inputs
                 )
 
@@ -142,12 +142,19 @@ class GetSimilarityScores:
             ]
 
             with Pool(processes=cpu_count()) as pool:
-                outputs = pool.starmap(calc_multi_gaussian_overlap_vol, inputs)
+                shape_outputs = pool.starmap(calc_multi_gaussian_overlap_vol, inputs)
 
         else:
             raise ValueError(
                 "Invalid volume_type argument. Must be 'analytic' or 'gaussian'."
             )
+
+        (
+            shape_tanimoto,
+            shape_fit_tversky,
+            shape_ref_tversky,
+            full_ref_fit_overlap,
+        ) = scores(shape_outputs, ref_overlap)
 
         if color:
             ref_pharm = calc_pharmacophore(self.ref_mol.mol)
@@ -156,56 +163,13 @@ class GetSimilarityScores:
 
             with Pool(processes=cpu_count()) as pool:
                 outputs_pharm = pool.starmap(calc_multi_pharm_overlap, inputs)
-
-            # TODO: move this to a function since it is used again
-            outputs_pharm = np.array(outputs_pharm)
-            full_fit_overlap = outputs_pharm[:, 0]
-            full_ref_fit_overlap = outputs_pharm[:, 1]
-            full_ref_overlap = np.ones_like(full_fit_overlap) * ref_volume
-            color_tanimoto = calc_tanimoto(
-                full_ref_overlap, full_fit_overlap, full_ref_fit_overlap
-            )
-            color_fit_tversky = calc_tversky(
-                full_ref_overlap,
-                full_fit_overlap,
-                full_ref_fit_overlap,
-                alpha=0.05,
-                beta=0.95,
-            )
-            color_ref_tversky = calc_tversky(
-                full_ref_overlap,
-                full_fit_overlap,
-                full_ref_fit_overlap,
-                alpha=0.95,
-                beta=0.05,
+            color_tanimoto, color_fit_tversky, color_ref_tversky, _ = scores(
+                outputs_pharm, ref_volume
             )
         else:
             color_tanimoto, color_fit_tversky, color_ref_tversky = [
                 np.zeros(len(self.transformed_molecules))
             ] * 3
-
-        outputs = np.array(outputs)
-        full_fit_overlap = outputs[:, 0]
-        full_ref_fit_overlap = outputs[:, 1]
-        full_ref_overlap = np.ones_like(full_fit_overlap) * ref_overlap
-
-        shape_tanimoto = calc_tanimoto(
-            full_ref_overlap, full_fit_overlap, full_ref_fit_overlap
-        )
-        shape_fit_tversky = calc_tversky(
-            full_ref_overlap,
-            full_fit_overlap,
-            full_ref_fit_overlap,
-            alpha=0.05,
-            beta=0.95,
-        )
-        shape_ref_tversky = calc_tversky(
-            full_ref_overlap,
-            full_fit_overlap,
-            full_ref_fit_overlap,
-            alpha=0.95,
-            beta=0.05,
-        )
 
         df_data = {
             "Molecule": self.dataset_names,
