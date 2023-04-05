@@ -182,12 +182,49 @@ class GetSimilarityScores:
             )
 
         if color:
-            color_ts = []
-            for fit_mol in self.transformed_molecules:
-                t = color_tanimoto(self.ref_mol.mol, fit_mol.mol)
-                color_ts.append(t)
+            # color_ts = []
+            ref_pharm = calc_pharmacophore(self.ref_mol.mol)
+            ref_volume = calc_pharm_overlap(ref_pharm, ref_pharm)
+            inputs = [(fit_mol, ref_pharm) for fit_mol in self.transformed_molecules]
+
+            with Pool(processes=cpu_count()) as pool:
+                outputs_pharm = pool.starmap(calc_multi_pharm_overlap, inputs)
+
+            # TODO: move this to a function since it is used again
+            outputs_pharm = np.array(outputs_pharm)
+            full_fit_overlap = outputs_pharm[:, 0]
+            full_ref_fit_overlap = outputs_pharm[:, 1]
+            full_ref_overlap = np.ones_like(full_fit_overlap) * ref_volume
+            color_tanimoto = calc_tanimoto(
+                full_ref_overlap, full_fit_overlap, full_ref_fit_overlap
+            )
+            color_fit_tversky = calc_tversky(
+                full_ref_overlap,
+                full_fit_overlap,
+                full_ref_fit_overlap,
+                alpha=0.05,
+                beta=0.95,
+            )
+            color_ref_tversky = calc_tversky(
+                full_ref_overlap,
+                full_fit_overlap,
+                full_ref_fit_overlap,
+                alpha=0.95,
+                beta=0.05,
+            )
+
+            # for fit_mol in self.transformed_molecules:
+            #     fit_pharm = calc_pharmacophore(fit_mol.mol)
+            #     fit_volume = calc_full_pharm_overlap(fit_pharm, fit_pharm)
+            #     ref_fit_volume = calc_full_pharm_overlap(ref_pharm, fit_pharm)
+            #
+            #     t = color_tanimoto(self.ref_mol.mol, fit_mol.mol)
+            #     color_ts.append(t)
         else:
-            color_ts = None
+            # color_ts = None
+            color_tanimoto, color_fit_tversky, color_ref_tversky = [
+                np.zeros(len(self.transformed_molecules))
+            ] * 3
 
         outputs = np.array(outputs)
         full_fit_overlap = outputs[:, 0]
