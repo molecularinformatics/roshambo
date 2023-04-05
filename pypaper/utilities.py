@@ -37,8 +37,9 @@ def convert_oeb_to_sdf(oeb_file, sdf_file, working_dir=None):
         oechem.OEThrow.Fatal(f"Unable to open {oeb_file}")
 
 
-def split_sdf_file(input_file, output_dir, max_mols_per_file=20, ignore_hydrogens=False,
-                   cleanup=False):
+def split_sdf_file(
+    input_file, output_dir, max_mols_per_file=20, ignore_hydrogens=False, cleanup=False
+):
     """
     Split an sdf file into multiple files using RDKit.
 
@@ -87,7 +88,9 @@ def split_sdf_file(input_file, output_dir, max_mols_per_file=20, ignore_hydrogen
     return output_files
 
 
-def prepare_mols(file_names, opt=False, ignore_hydrogens=False, num_conformers=10, random_seed=999):
+def prepare_mols(
+    file_names, opt=False, ignore_hydrogens=False, num_conformers=10, random_seed=999
+):
     used_names = {}
     processed_mols = []
     mol_names = []
@@ -97,18 +100,23 @@ def prepare_mols(file_names, opt=False, ignore_hydrogens=False, num_conformers=1
             continue
         suppl = Chem.SDMolSupplier(file_name, removeHs=ignore_hydrogens)
         for rdkit_mol in suppl:
-            name = rdkit_mol.GetProp('_Name')
+            name = rdkit_mol.GetProp("_Name")
             if name in used_names:
                 used_names[name] += 1
                 new_name = f"{name}_{used_names[name]}"
             else:
                 used_names[name] = 0
                 new_name = f"{name}_0"
-            rdkit_mol.SetProp('_Name', new_name)
-            mols = process_molecule(rdkit_mol, opt=opt, num_conformers=num_conformers, random_seed=random_seed)
+            rdkit_mol.SetProp("_Name", new_name)
+            mols = process_molecule(
+                rdkit_mol,
+                opt=opt,
+                num_conformers=num_conformers,
+                random_seed=random_seed,
+            )
             for mol in mols:
                 processed_mols.append(mol)
-                mol_names.append(mol.mol.GetProp('_Name'))
+                mol_names.append(mol.mol.GetProp("_Name"))
                 sd_writer.write(mol.mol)
     sd_writer.close()
     return processed_mols, mol_names
@@ -116,7 +124,7 @@ def prepare_mols(file_names, opt=False, ignore_hydrogens=False, num_conformers=1
 
 def process_molecule(rdkit_mol, opt, num_conformers=10, random_seed=999):
     mol = Molecule(rdkit_mol, opt=opt)
-    mol_name = rdkit_mol.GetProp('_Name')
+    mol_name = rdkit_mol.GetProp("_Name")
     mol.center_mol()
     mol.project_mol()
     new_mol = copy.deepcopy(mol)
