@@ -252,15 +252,24 @@ class GetSimilarityScores:
         )
 
         df_data = {
-                "Molecule": [
-                    os.path.basename(path).split(".")[0] for path in self.dataset_files
-                ],
-                "Overlap": full_ref_fit_overlap,
-                "ShapeTanimoto": full_tanimoto,
-            }
-        if color_ts is not None:
-            df_data["ColorTanimoto"] = color_ts
-            df_data["ComboTanimoto"] = df_data["Tanimoto"] + df_data["ColorTanimoto"]
+            "Molecule": self.dataset_names,
+            # "Molecule": [
+            #     os.path.basename(path).split(".")[0] for path in self.dataset_files
+            # ],
+            "ComboTanimoto": shape_tanimoto + color_tanimoto,
+            "ShapeTanimoto": shape_tanimoto,
+            "ColorTanimoto": color_tanimoto,
+            "FitTverskyCombo": shape_fit_tversky + color_fit_tversky,
+            "FitTversky": shape_fit_tversky,
+            "FitColorTversky": color_fit_tversky,
+            "RefTverskyCombo": shape_ref_tversky + color_ref_tversky,
+            "RefTversky": shape_ref_tversky,
+            "RefColorTversky": color_ref_tversky,
+            "Overlap": full_ref_fit_overlap,
+        }
+        # if color_tanimoto is not None:
+        #     df_data["ColorTanimoto"] = color_tanimoto
+        #     df_data["ComboTanimoto"] = df_data["ShapeTanimoto"] + df_data["ColorTanimoto"]
 
         df = pd.DataFrame(df_data)
         df.sort_values(by=sort_by, ascending=False, inplace=True)
