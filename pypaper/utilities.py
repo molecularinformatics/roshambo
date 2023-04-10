@@ -92,7 +92,7 @@ def prepare_mols(
     file_names,
     opt=False,
     ignore_hydrogens=False,
-    num_conformers=10,
+    n_confs=10,
     random_seed=999,
     keep_mol=False,
 ):
@@ -116,7 +116,7 @@ def prepare_mols(
             mols = process_molecule(
                 rdkit_mol,
                 opt=opt,
-                num_conformers=num_conformers,
+                n_confs=n_confs,
                 random_seed=random_seed,
                 keep_mol=keep_mol,
             )
@@ -128,16 +128,16 @@ def prepare_mols(
     return processed_mols, mol_names
 
 
-def process_molecule(rdkit_mol, opt, num_conformers, random_seed, keep_mol):
+def process_molecule(rdkit_mol, opt, n_confs, random_seed, keep_mol):
     mol = Molecule(rdkit_mol, opt=opt)
     mol_name = rdkit_mol.GetProp("_Name")
     mol.center_mol()
     mol.project_mol()
     new_mol = copy.deepcopy(mol)
-    if num_conformers:
-        new_mol.generate_conformers(num_conformers, random_seed)
+    if n_confs:
+        new_mol.generate_conformers(n_confs, random_seed)
         conformers = []
-        for i in range(num_conformers):
+        for i in range(n_confs):
             conformer_name = f"{mol_name}_{i+1}"
             conformer_mol = Chem.Mol(new_mol.mol)
             conformer_mol.RemoveAllConformers()

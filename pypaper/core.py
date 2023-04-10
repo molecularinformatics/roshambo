@@ -41,7 +41,7 @@ class GetSimilarityScores:
         dataset_files_pattern,
         opt=False,
         ignore_hydrogens=False,
-        num_conformers=10,
+        n_confs=10,
         random_seed=999,
         keep_mol=False,
         working_dir=None,
@@ -54,7 +54,7 @@ class GetSimilarityScores:
             [self.ref_file],
             opt=opt,
             ignore_hydrogens=ignore_hydrogens,
-            num_conformers=0,
+            n_confs=0,
             keep_mol=True,
         )
         self.ref_mol = ref_mol[0]
@@ -63,7 +63,7 @@ class GetSimilarityScores:
             self.dataset_files,
             opt=opt,
             ignore_hydrogens=ignore_hydrogens,
-            num_conformers=num_conformers,
+            n_confs=n_confs,
             random_seed=random_seed,
             keep_mol=keep_mol
         )
