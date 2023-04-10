@@ -41,8 +41,6 @@ float3 atomset_centroid(OBMol& mol,const set<int>& atoms);
 
 float3 atomset_centroid_rdkit(RDKit::ROMol* rdmol, const set<int>& atoms);
 
-list<set<int>> find_ring_systems_rdkit(RDKit::ROMol* rdmol, bool includeSpiro);
-
 extern "C" void molFromFile(string filename,list<CUDAmol>& cmols,list<dCUDAmol>& dcmols,list<list<float3> >& ring_centroids);
 
 extern "C" void molFromRDKit(RDKit::ROMol* rdmol,list<CUDAmol>& cmols,list<dCUDAmol>& dcmols,list<list<float3> >& ring_centroids);
