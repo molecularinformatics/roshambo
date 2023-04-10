@@ -39,7 +39,7 @@ double getustime(void) { // {{{
     return t;
 } //}}}
 
-extern "C" int paper(int gpuID, list<RDKit::ROMol*>& molecules) {
+extern "C" float** paper(int gpuID, list<RDKit::ROMol*>& molecules) {
     int num_mols = 0;
     num_mols = molecules.size();
 
@@ -90,6 +90,7 @@ extern "C" int paper(int gpuID, list<RDKit::ROMol*>& molecules) {
 
     float* hostDeviceTransforms = (float*)malloc(nfitmols*devFitMM.transform_pitch*sizeof(float));
 
+
     // optimize the overlaps
     double optstart = getustime();
     const int itercount = optimize_sepkernels(devFitMM,devRefMM,hostDeviceOverlaps,hostTimings,numTimers,com_ref,com_fit);
@@ -134,6 +135,8 @@ extern "C" int paper(int gpuID, list<RDKit::ROMol*>& molecules) {
     }
 
 
+    float** matrices = new float*[distinctMols];
+
     bool showresults = true;
     bool benchmark   = false;
     if (showresults) { //{{{
@@ -146,10 +149,15 @@ extern "C" int paper(int gpuID, list<RDKit::ROMol*>& molecules) {
             printf("Fit molecule %d: starting overlap: %f, (putative) ending overlap: %f, ending device overlap: %f, ending host overlap: %f\n\n",i,hostDeviceStartOvl[i],hostDeviceOverlaps[i],hostDeviceEndOvl[i],hostOvl);*/
         }
         for (uint i = 0; i < distinctMols; i++) {
-            //printf("Molecule id #%d: optimal overlap value = %f\n",i,bestOverlaps[i]);
+            printf("Molecule id #%d: optimal overlap value = %f\n",i,bestOverlaps[i]);
             //float *xf = bestTransforms+i*7;
             //printf("[ %.2f %.2f %.2f; %.2f %.2f %.2f %.2f]\n",xf[0],xf[1],xf[2],xf[3],xf[4],xf[5],xf[6]);
             float* matrix = transformToCompensatedMatrix(bestTransforms+i*7,com_ref,com_fit[i]);
+            float* newArray = new float[16];
+            for (int j = 0; j < 16; j++) {
+                newArray[j] = matrix[j];
+            }
+            matrices[i] = newArray;
             printTransformMatrix(matrix,stdout);
             free(matrix);
         }
@@ -193,7 +201,7 @@ extern "C" int paper(int gpuID, list<RDKit::ROMol*>& molecules) {
 
     delete[] bestOverlaps;
     delete[] bestTransforms;
-    return 0;
+    return matrices;
 }
 
 int main(int argc, char* argv[]) {
@@ -215,7 +223,7 @@ int main(int argc, char* argv[]) {
         }
         string mol_filename;
         while (getline(listing_file, mol_filename)) {
-            auto mol = RDKit::MolFileToMol(mol_filename);
+            auto mol = RDKit::MolFileToMol(mol_filename, false, false, true);
             if (!mol) {
                 cerr << "Error: Could not parse molecule from file " << mol_filename << endl;
                 return 1;
@@ -225,7 +233,7 @@ int main(int argc, char* argv[]) {
     } else { // multiple arguments provided, assume each argument is a mol file
         for (int i = 2; i < argc; i++) {
             string filename = argv[i];
-            auto mol = RDKit::MolFileToMol(filename);
+            auto mol = RDKit::MolFileToMol(filename, false, false, true);
             if (!mol) {
                 cerr << "Error: Could not parse molecule from file " << filename << endl;
                 return 1;
@@ -234,7 +242,13 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    int result = paper(gpuID, molecules);
+   float** result = paper(gpuID, molecules);
+   for (int i = 0; i < 1; i++) {
+       for (int j = 0; j < 16; j++) {
+           std::cout << result[i][j] << " ";
+       }
+       std::cout << std::endl;
+   }
 
     for (auto mol : molecules) {
         delete mol;
