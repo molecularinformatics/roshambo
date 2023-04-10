@@ -129,8 +129,11 @@ CUDAmol rdMolToCUDAmol(RDKit::ROMol* rdmol)
     const auto &conf = rdmol->getConformer();
     unsigned int idx = 0;
     const PeriodicTable *table = RDKit::PeriodicTable::getTable();
-    for (unsigned int i = 0; i < natoms; ++i) {
+    for (unsigned int i = 0; i < rdmol->getNumAtoms(); ++i) {
         const auto& atom = rdmol->getAtomWithIdx(i);
+        #ifdef IGNORE_HYDROGENS
+        if (table->getRvdw(atom->getAtomicNum()) == 1.2) continue;
+        #endif
         const auto& coords = conf.getAtomPos(i);
         mol.atoms[idx].x = coords.x;
         mol.atoms[idx].y = coords.y;
@@ -164,12 +167,12 @@ dCUDAmol rdMolTodCUDAmol(RDKit::ROMol* rdmol)
     const auto &conf = rdmol->getConformer();
     unsigned int idx = 0;
     const PeriodicTable *table = RDKit::PeriodicTable::getTable();
-    for (unsigned int i = 0; i < natoms; ++i) {
+    for (unsigned int i = 0; i < rdmol->getNumAtoms(); ++i) {
         const auto& atom = rdmol->getAtomWithIdx(i);
-        const auto& coords = conf.getAtomPos(i);
         #ifdef IGNORE_HYDROGENS
-        if (table->getRvdw(atom->getAtomicNum()) == 1) continue;
+        if (table->getRvdw(atom->getAtomicNum()) == 1.2) continue;
         #endif
+        const auto& coords = conf.getAtomPos(i);
         mol.x[idx] = coords.x;
         mol.y[idx] = coords.y;
         mol.z[idx] = coords.z;
