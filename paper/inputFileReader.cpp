@@ -202,30 +202,9 @@ float3 atomset_centroid_rdkit(RDKit::ROMol* rdmol, const std::set<int>& atoms) {
     cen.x /= num_atoms;
     cen.y /= num_atoms;
     cen.z /= num_atoms;
-
     return cen;
 }
 
-list<set<int>> find_ring_systems_rdkit(RDKit::ROMol* rdmol, bool includeSpiro=false) {
-    RDKit::RingInfo *ring_info = rdmol->getRingInfo();
-    list<set<int>> systems;
-    for (const auto& ring : ring_info->atomRings()) {
-        set<int> ringAts(ring.begin(), ring.end());
-        list<set<int>> nSystems;
-        for (const auto& system : systems) {
-            int nInCommon = count_if(system.begin(), system.end(),
-                                     [&](int i){ return ringAts.count(i) > 0; });
-            if (nInCommon && (includeSpiro || nInCommon > 1)) {
-                ringAts.insert(system.begin(), system.end());
-            } else {
-                nSystems.push_back(system);
-            }
-        }
-        nSystems.push_back(ringAts);
-        systems = nSystems;
-    }
-    return systems;
-}
 
 extern "C" void molFromFile(string filename,list<CUDAmol>& cmols,list<dCUDAmol>& dcmols,list<list<float3> >& ring_centroids) {
     OBConversion conv;
