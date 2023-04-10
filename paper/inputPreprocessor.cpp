@@ -25,10 +25,12 @@
 #include <openbabel/mol.h>
 #include <openbabel/obiter.h>
 #include <openbabel/data.h>
+#include <GraphMol/ROMol.h>
 
 
 using namespace std;
 using namespace OpenBabel;
+using namespace RDKit;
 
 list<set<int> > cyclic_decomposition(const molgraph& molecule) {
     map<int,int> cycle_domain;
@@ -130,6 +132,22 @@ list<set<int> > cyclic_decomposition(const molgraph& molecule) {
     //cout << graph.toDOT();
     return cyclic_decomposition(graph);
 }
+
+ list<set<int> > find_ring_systems_rdkit(RDKit::ROMol* rdmol) {
+    molgraph graph;
+    for (unsigned int i = 0; i < rdmol->getNumAtoms(); ++i) {
+        const auto& atom = rdmol->getAtomWithIdx(i);
+        graph.add_vertex(atom->getIdx());
+    }
+    for (unsigned int i = 0; i < rdmol->getNumBonds(); ++i) {
+        const auto& bond = rdmol->getBondWithIdx(i);
+        if (bond->getBeginAtomIdx() > bond->getEndAtomIdx())
+            continue;
+        graph.add_edge(bond->getBeginAtomIdx(), bond->getEndAtomIdx());
+    }
+    return cyclic_decomposition(graph);
+}
+
 
 static int test_main(int argc,char** argv) {
     OBConversion conv;
