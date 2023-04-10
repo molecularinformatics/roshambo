@@ -43,6 +43,7 @@ class GetSimilarityScores:
         ignore_hydrogens=False,
         num_conformers=10,
         random_seed=999,
+        keep_mol=False,
         working_dir=None,
     ):
         self.working_dir = working_dir or os.getcwd()
@@ -54,6 +55,7 @@ class GetSimilarityScores:
             opt=opt,
             ignore_hydrogens=ignore_hydrogens,
             num_conformers=0,
+            keep_mol=True,
         )
         self.ref_mol = ref_mol[0]
         # TODO:Check if saving all molecules into numpy arrays will cause memory leaks
@@ -63,6 +65,7 @@ class GetSimilarityScores:
             ignore_hydrogens=ignore_hydrogens,
             num_conformers=num_conformers,
             random_seed=random_seed,
+            keep_mol=keep_mol
         )
 
         self.transformation_arrays = None

@@ -89,7 +89,12 @@ def split_sdf_file(
 
 
 def prepare_mols(
-    file_names, opt=False, ignore_hydrogens=False, num_conformers=10, random_seed=999
+    file_names,
+    opt=False,
+    ignore_hydrogens=False,
+    num_conformers=10,
+    random_seed=999,
+    keep_mol=False,
 ):
     used_names = {}
     processed_mols = []
@@ -113,6 +118,7 @@ def prepare_mols(
                 opt=opt,
                 num_conformers=num_conformers,
                 random_seed=random_seed,
+                keep_mol=keep_mol,
             )
             for mol in mols:
                 processed_mols.append(mol)
@@ -122,7 +128,7 @@ def prepare_mols(
     return processed_mols, mol_names
 
 
-def process_molecule(rdkit_mol, opt, num_conformers=10, random_seed=999):
+def process_molecule(rdkit_mol, opt, num_conformers, random_seed, keep_mol):
     mol = Molecule(rdkit_mol, opt=opt)
     mol_name = rdkit_mol.GetProp("_Name")
     mol.center_mol()
@@ -142,6 +148,9 @@ def process_molecule(rdkit_mol, opt, num_conformers=10, random_seed=999):
             conformer_mol.project_mol()
             conformers.append(conformer_mol)
         mol.mol.SetProp("_Name", f"{mol_name}_0")
-        return [mol] + conformers
+        if keep_mol:
+            return [mol] + conformers
+        else:
+            return conformers
     else:
         return [mol]
