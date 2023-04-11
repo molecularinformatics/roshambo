@@ -183,3 +183,71 @@ def process_molecule(rdkit_mol, opt, n_confs, keep_mol, **conf_kwargs):
             return conformers
     else:
         return [mol]
+
+
+def prepare_mols(
+    inputs,
+    ignore_hs=True,
+    opt=False,
+    n_confs=10,
+    keep_mol=False,
+    **conf_kwargs,
+):
+    processed_mols = []
+    mol_names = []
+    sd_writer = Chem.SDWriter("mols.sdf")
+
+    is_sdf_input = any(
+        os.path.isfile(input_str) and input_str.endswith(".sdf") for input_str in inputs
+    )
+    if is_sdf_input:
+        rdmols = sdf_to_rdmol(inputs, ignore_hs=ignore_hs)
+    else:
+        rdmols = smiles_to_rdmol(inputs, ignore_hs=ignore_hs)
+
+    for rdmol in rdmols:
+        mols = process_molecule(
+            rdmol, opt=opt, n_confs=n_confs, keep_mol=keep_mol, **conf_kwargs
+        )
+        for mol in mols:
+            processed_mols.append(mol)
+            mol_names.append(mol.mol.GetProp("_Name"))
+            sd_writer.write(mol.mol)
+    sd_writer.close()
+    return processed_mols, mol_names
+
+
+# def prepare_mols(
+#     file_names,
+#     opt=False,
+#     ignore_hs=False,
+#     n_confs=10,
+#     keep_mol=False,
+#     **conf_kwargs,
+# ):
+#     used_names = {}
+#     processed_mols = []
+#     mol_names = []
+#     sd_writer = Chem.SDWriter("mols.sdf")
+#     for file_name in file_names:
+#         if not os.path.isfile(file_name):
+#             continue
+#         suppl = Chem.SDMolSupplier(file_name, removeHs=ignore_hs)
+#         for rdkit_mol in suppl:
+#             name = rdkit_mol.GetProp("_Name")
+#             if name in used_names:
+#                 used_names[name] += 1
+#                 new_name = f"{name}_{used_names[name]}"
+#             else:
+#                 used_names[name] = 0
+#                 new_name = f"{name}_0"
+#             rdkit_mol.SetProp("_Name", new_name)
+#             mols = process_molecule(
+#                 rdkit_mol, opt=opt, n_confs=n_confs, keep_mol=keep_mol, **conf_kwargs
+#             )
+#             for mol in mols:
+#                 processed_mols.append(mol)
+#                 mol_names.append(mol.mol.GetProp("_Name"))
+#                 sd_writer.write(mol.mol)
+#     sd_writer.close()
+#     return processed_mols, mol_names
