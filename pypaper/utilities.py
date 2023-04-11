@@ -88,13 +88,14 @@ def split_sdf_file(
     return output_files
 
 
-def prepare_mols(
-    file_names,
-    opt=False,
-    ignore_hydrogens=False,
-    n_confs=10,
-    random_seed=999,
-    keep_mol=False,
+def smiles_to_rdmol(
+    smiles,
+    ignore_hs=True,
+    sanitize=True,
+    allow_cxsmiles=True,
+    parse_name=False,
+    strict_cxsmiles=False,
+    name_prefix="mol",
 ):
     """
     Converts SMILES strings or a SMILES file into RDKit molecule objects.
