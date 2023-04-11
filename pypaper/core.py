@@ -42,9 +42,9 @@ class GetSimilarityScores:
         opt=False,
         ignore_hs=False,
         n_confs=10,
-        random_seed=999,
         keep_mol=False,
         working_dir=None,
+        **conf_kwargs
     ):
         self.working_dir = working_dir or os.getcwd()
         self.ref_file = f"{self.working_dir}/{ref_file}"
@@ -64,8 +64,8 @@ class GetSimilarityScores:
             opt=opt,
             ignore_hs=ignore_hs,
             n_confs=n_confs,
-            random_seed=random_seed,
-            keep_mol=keep_mol
+            keep_mol=keep_mol,
+            **conf_kwargs
         )
 
         self.transformation_arrays = None
