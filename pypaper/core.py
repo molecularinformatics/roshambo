@@ -44,9 +44,11 @@ class GetSimilarityScores:
         n_confs=10,
         keep_mol=False,
         working_dir=None,
-        **conf_kwargs
+        **conf_kwargs,
     ):
         self.working_dir = working_dir or os.getcwd()
+        self.n_confs = n_confs
+        self.conf_kwargs = conf_kwargs
         self.ref_file = f"{self.working_dir}/{ref_file}"
         self.dataset_files = glob.glob(f"{self.working_dir}/{dataset_files_pattern}")
 
@@ -212,10 +214,23 @@ class GetSimilarityScores:
             df_columns = df.columns
             df = df.set_index("Molecule")
             for mol in [self.ref_mol] + reordered_mol_list:
+                if self.n_confs:
+                    ff = self.conf_kwargs.get("ff", "UFF")
+                    try:
+                        mol.mol.SetProp(
+                            f"rdkit_{ff}_energy", mol.mol.GetProp(f"rdkit_{ff}_energy")
+                        )
+                        mol.mol.SetProp(
+                            f"rdkit_{ff}_delta_energy",
+                            mol.mol.GetProp(f"rdkit_{ff}_delta_energy"),
+                        )
+                    except Exception:
+                        pass
                 if mol != self.ref_mol:
                     mol_props = df.loc[mol.mol.GetProp("_Name"), :]
                     for col in df_columns[1:]:
                         mol_prop = str(mol_props[col])
                         mol.mol.SetProp("PYPAPER_" + col, mol_prop)
                 sd_writer.write(mol.mol)
+            sd_writer.close()
         return df
