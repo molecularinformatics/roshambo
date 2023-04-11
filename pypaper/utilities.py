@@ -167,26 +167,16 @@ def sdf_to_rdmol(file_names, ignore_hs=True):
     return mols
 
 
-def process_molecule(rdkit_mol, opt, n_confs, random_seed, keep_mol):
+def process_molecule(rdkit_mol, opt, n_confs, keep_mol, **conf_kwargs):
     mol = Molecule(rdkit_mol, opt=opt)
-    mol_name = rdkit_mol.GetProp("_Name")
+    # mol_name = rdkit_mol.GetProp("_Name")
     mol.center_mol()
     mol.project_mol()
     new_mol = copy.deepcopy(mol)
     if n_confs:
-        new_mol.generate_conformers(n_confs, random_seed)
-        conformers = []
-        for i in range(n_confs):
-            conformer_name = f"{mol_name}_{i+1}"
-            conformer_mol = Chem.Mol(new_mol.mol)
-            conformer_mol.RemoveAllConformers()
-            conformer_mol.AddConformer(Chem.Conformer(new_mol.mol.GetConformer(i)))
-            conformer_mol.SetProp("_Name", conformer_name)
-            conformer_mol = Molecule(conformer_mol)
-            conformer_mol.center_mol()
-            conformer_mol.project_mol()
-            conformers.append(conformer_mol)
-        mol.mol.SetProp("_Name", f"{mol_name}_0")
+        new_mol.generate_conformers(n_confs, **conf_kwargs)
+        conformers = new_mol.process_confs(conf_kwargs.get("ff", "UFF"))
+        # mol.mol.SetProp("_Name", f"{mol_name}_0")
         if keep_mol:
             return [mol] + conformers
         else:
