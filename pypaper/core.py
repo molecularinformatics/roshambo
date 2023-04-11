@@ -40,7 +40,7 @@ class GetSimilarityScores:
         ref_file,
         dataset_files_pattern,
         opt=False,
-        ignore_hydrogens=False,
+        ignore_hs=False,
         n_confs=10,
         random_seed=999,
         keep_mol=False,
@@ -53,7 +53,7 @@ class GetSimilarityScores:
         ref_mol, _ = prepare_mols(
             [self.ref_file],
             opt=opt,
-            ignore_hydrogens=ignore_hydrogens,
+            ignore_hs=ignore_hs,
             n_confs=0,
             keep_mol=True,
         )
@@ -62,7 +62,7 @@ class GetSimilarityScores:
         self.dataset_mols, self.dataset_names = prepare_mols(
             self.dataset_files,
             opt=opt,
-            ignore_hydrogens=ignore_hydrogens,
+            ignore_hs=ignore_hs,
             n_confs=n_confs,
             random_seed=random_seed,
             keep_mol=keep_mol

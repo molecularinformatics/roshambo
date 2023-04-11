@@ -38,7 +38,7 @@ def convert_oeb_to_sdf(oeb_file, sdf_file, working_dir=None):
 
 
 def split_sdf_file(
-    input_file, output_dir, max_mols_per_file=20, ignore_hydrogens=False, cleanup=False
+    input_file, output_dir, max_mols_per_file=20, ignore_hs=False, cleanup=False
 ):
     """
     Split an sdf file into multiple files using RDKit.
@@ -53,7 +53,7 @@ def split_sdf_file(
         output_files (list): list of output file paths
     """
     name = os.path.basename(input_file).split(".sdf")[0]
-    suppl = Chem.SDMolSupplier(input_file, removeHs=ignore_hydrogens)
+    suppl = Chem.SDMolSupplier(input_file, removeHs=ignore_hs)
     count = 0
     mol_count = 0
     writer = None
@@ -103,9 +103,9 @@ def prepare_mols(
     for file_name in file_names:
         if not os.path.isfile(file_name):
             continue
-        suppl = Chem.SDMolSupplier(file_name, removeHs=ignore_hydrogens)
-        for rdkit_mol in suppl:
-            name = rdkit_mol.GetProp("_Name")
+        suppl = Chem.SDMolSupplier(file_name, removeHs=ignore_hs)
+        for mol in suppl:
+            name = mol.GetProp("_Name")
             if name in used_names:
                 used_names[name] += 1
                 new_name = f"{name}_{used_names[name]}"
