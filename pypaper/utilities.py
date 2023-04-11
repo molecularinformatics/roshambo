@@ -96,10 +96,60 @@ def prepare_mols(
     random_seed=999,
     keep_mol=False,
 ):
+    """
+    Converts SMILES strings or a SMILES file into RDKit molecule objects.
+
+    Parameters:
+        - smiles (str or list): SMILES string(s) or a path to a SMILES file.
+        - ignore_hs (bool): Whether to ignore hydrogens in the molecule (default True).
+        - sanitize (bool): Whether to sanitize the molecule after construction (default True).
+        - allow_cxsmiles (bool): Whether to allow CXSMILES (default True).
+        - parse_name (bool): Whether to parse the molecule name from the SMILES string (default False).
+        - strict_cxsmiles (bool): Whether to strictly enforce CXSMILES syntax (default False).
+        - name_prefix (str): A prefix to use when naming the molecules (default "mol").
+
+    Returns:
+        A list of RDKit molecule objects.
+    """
+    params = Chem.SmilesParserParams()
+    params.removeHs = ignore_hs
+    params.sanitize = sanitize
+    params.allowCXSMILES = allow_cxsmiles
+    params.parseName = parse_name
+    params.strictCXSMILES = strict_cxsmiles
+
+    mols = []
+    count = 0
+    if isinstance(smiles, str):
+        smiles = [smiles]
+    for smi in smiles:
+        if os.path.isfile(smi):
+            with open(smi, "r", newline="") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    mol = Chem.MolFromSmiles(line, params=params)
+                    if mol is not None:
+                        mol.SetProp("_Name", f"{name_prefix}_{count}")
+                        mols.append(mol)
+                        count += 1
+        else:
+            mol = Chem.MolFromSmiles(smi, params=params)
+            if mol is not None:
+                mol.SetProp("_Name", f"{name_prefix}_{count}")
+                mols.append(mol)
+                count += 1
+
+    if not mols:
+        raise ValueError("No valid molecules found in input.")
+
+    return mols
+
+
+def sdf_to_rdmol(file_names, ignore_hs=True):
+    mols = []
     used_names = {}
-    processed_mols = []
-    mol_names = []
-    sd_writer = Chem.SDWriter("mols.sdf")
     for file_name in file_names:
         if not os.path.isfile(file_name):
             continue
@@ -112,20 +162,9 @@ def prepare_mols(
             else:
                 used_names[name] = 0
                 new_name = f"{name}_0"
-            rdkit_mol.SetProp("_Name", new_name)
-            mols = process_molecule(
-                rdkit_mol,
-                opt=opt,
-                n_confs=n_confs,
-                random_seed=random_seed,
-                keep_mol=keep_mol,
-            )
-            for mol in mols:
-                processed_mols.append(mol)
-                mol_names.append(mol.mol.GetProp("_Name"))
-                sd_writer.write(mol.mol)
-    sd_writer.close()
-    return processed_mols, mol_names
+            mol.SetProp("_Name", new_name)
+            mols.append(mol)
+    return mols
 
 
 def process_molecule(rdkit_mol, opt, n_confs, random_seed, keep_mol):
