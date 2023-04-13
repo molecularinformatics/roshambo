@@ -61,16 +61,13 @@ class Molecule:
         new_xyz = np.dot(xyz, vh.T)
         self.create_molecule(new_xyz)
 
-    def center_mol(self):
-        centroid = np.zeros((1, 3))
-        count = 0
-        xyz = self.get_atomic_coordinates_and_radii()[:, :3]
-        for atom in xyz:
-            centroid = centroid + atom
-            count += 1
-        centroid = centroid / count
-        new_xyz = xyz - centroid
-        self.create_molecule(new_xyz)
+    def center_mol(self, ignore_hs=False):
+        conf = self.mol.GetConformer()
+        centroid = AllChem.ComputeCentroid(conf, ignoreHs=ignore_hs)
+        for i in range(conf.GetNumAtoms()):
+            pos = conf.GetAtomPosition(i)
+            pos -= centroid
+            conf.SetAtomPosition(i, pos)
 
     def generate_conformers(
         self,
