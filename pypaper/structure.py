@@ -33,9 +33,12 @@ class Molecule:
         conf = self.mol.GetConformer()
         periodic_table = Chem.GetPeriodicTable()
 
+        if use_carbon_radii:
+            radius = periodic_table.GetRvdw(6)
+
         def get_radius(atom):
-            atomic_num = 6 if use_carbon_radii else atom.GetAtomicNum()
-            return periodic_table.GetRvdw(atomic_num)
+            return radius if use_carbon_radii else periodic_table.GetRvdw(
+                atom.GetAtomicNum())
 
         coordinates_and_radii = [
             (*conf.GetAtomPosition(i), get_radius(atom))
