@@ -30,17 +30,18 @@ class Molecule:
         AllChem.UFFOptimizeMolecule(self.mol)
 
     def get_atomic_coordinates_and_radii(self, use_carbon_radii=False):
-        atoms = self.mol.GetAtoms()
-        coordinates_and_radii = []
         conf = self.mol.GetConformer()
         periodic_table = Chem.GetPeriodicTable()
-        for i, j in enumerate(atoms):
-            pos = conf.GetAtomPosition(i)
-            if use_carbon_radii:
-                radius = periodic_table.GetRvdw(6)
-            else:
-                radius = periodic_table.GetRvdw(j.GetAtomicNum())
-            coordinates_and_radii.append((pos.x, pos.y, pos.z, radius))
+
+        def get_radius(atom):
+            atomic_num = 6 if use_carbon_radii else atom.GetAtomicNum()
+            return periodic_table.GetRvdw(atomic_num)
+
+        coordinates_and_radii = [
+            (*conf.GetAtomPosition(i), get_radius(atom))
+            for i, atom in enumerate(self.mol.GetAtoms())
+        ]
+
         return np.array(coordinates_and_radii)
 
     def transform_mol(self, rot, trans):
