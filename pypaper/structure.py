@@ -73,7 +73,7 @@ class Molecule:
         self,
         n_confs=10,
         random_seed=999,
-        method="ETDG",
+        method="ETKDGv2",
         ff="UFF",
         opt_confs=False,
         calc_energy=False,
