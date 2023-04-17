@@ -33,14 +33,15 @@ def calc_pharmacophore(rdkit_mol):
         if fam in FEATURES.keys():
             pos = feature.GetPos()
             atom_indices = feature.GetAtomIds()
+            feature_data = FEATURES[fam]
             p = [
                 fam,
                 atom_indices,
                 [pos[0], pos[1], pos[2]],
-                FEATURES[fam][0],
-                FEATURES[fam][1],
+                feature_data[0],
+                feature_data[1],
             ]
-            if FEATURES[fam][1]:
+            if feature_data[1]:
                 if fam == "Aromatic":
                     n = calc_normal_aromatic(rdkit_mol, list(atom_indices), pos)
                 else:
