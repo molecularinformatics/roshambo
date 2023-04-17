@@ -2,6 +2,8 @@ import os
 import copy
 import time
 
+from multiprocessing import Pool
+
 from rdkit import Chem
 
 from pypaper.structure import Molecule
@@ -12,8 +14,10 @@ except ImportError:
     pass
 
 
-Chem.SetDefaultPickleProperties(Chem.PropertyPickleOptions.AllProps | Chem.PropertyPickleOptions.ComputedProps)
-#Chem.SetDefaultPickleProperties(Chem.PropertyPickleOptions.ComputedProps)
+Chem.SetDefaultPickleProperties(
+    Chem.PropertyPickleOptions.AllProps | Chem.PropertyPickleOptions.ComputedProps
+)
+# Chem.SetDefaultPickleProperties(Chem.PropertyPickleOptions.ComputedProps)
 
 
 def convert_oeb_to_sdf(oeb_file, sdf_file, working_dir=None):
@@ -187,48 +191,6 @@ def process_molecule(rdkit_mol, opt, n_confs, keep_mol, **conf_kwargs):
             return conformers
     else:
         return [mol]
-
-
-# def prepare_mols(
-#     inputs,
-#     ignore_hs=True,
-#     opt=False,
-#     n_confs=10,
-#     keep_mol=False,
-#     **conf_kwargs,
-# ):
-#     st = time.time()
-#     processed_mols = []
-#     mol_names = []
-#
-#     is_sdf_input = any(
-#         os.path.isfile(input_str) and input_str.endswith(".sdf") for input_str in inputs
-#     )
-#     if is_sdf_input:
-#         rdmols = sdf_to_rdmol(inputs, ignore_hs=ignore_hs)
-#     else:
-#         rdmols = smiles_to_rdmol(inputs, ignore_hs=ignore_hs)
-#
-#     for rdmol in rdmols:
-#         mols = process_molecule(
-#             rdmol, opt=opt, n_confs=n_confs, keep_mol=keep_mol, **conf_kwargs
-#         )
-#         for mol in mols:
-#             processed_mols.append(mol)
-#             mol_names.append(mol.mol.GetProp("_Name"))
-#
-#     sd_writer = Chem.SDWriter("mols_serial1.sdf")
-#     for mol in processed_mols:
-#         sd_writer.write(mol.mol)
-#     sd_writer.close()
-#
-#     et = time.time()
-#     print(f"Preparing mols took: {et - st}")
-#     return processed_mols, mol_names
-
-import os
-import time
-from multiprocessing import Pool
 
 
 def prepare_mols(
