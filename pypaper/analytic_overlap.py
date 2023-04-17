@@ -5,10 +5,7 @@ import numpy as np
 
 from itertools import combinations
 
-KAPPA = 2.41798793102
-PI = 3.14159265358
-CONSTANT_P = (4 / 3) * PI * (KAPPA / PI) ** 1.5
-EXP = math.exp(1)
+from pypaper import constants
 
 
 def calc_analytic_overlap_vol(ref_mol, fit_mol):
@@ -25,13 +22,13 @@ def calc_analytic_overlap_vol(ref_mol, fit_mol):
         (ref_coords[:, np.newaxis, :] - fit_coords[np.newaxis, :, :]) ** 2, axis=2
     )
 
-    pi = (4 / 3) * PI * (KAPPA / PI) ** 1.5
+    pi = (4 / 3) * constants.PI * (constants.KAPPA / constants.PI) ** 1.5
     pij = pi * pi
-    ai = (KAPPA / (ref_radii**2))[:, np.newaxis]
-    aj = (KAPPA / (fit_radii**2))[np.newaxis, :]
+    ai = (constants.KAPPA / (ref_radii**2))[:, np.newaxis]
+    aj = (constants.KAPPA / (fit_radii**2))[np.newaxis, :]
     aij = ai + aj
     dij = ai * aj * dist_sqr
-    vij = pij * np.exp(-dij / aij) * (PI / aij) ** 1.5
+    vij = pij * np.exp(-dij / aij) * (constants.PI / aij) ** 1.5
     overlap = np.sum(vij)
     return overlap
 
@@ -43,11 +40,11 @@ def calc_multi_analytic_overlap_vol(ref_mol, fit_mol):
 
 
 def calc_single_overlap(atom_inds, alpha_dict, cross_alpha_distance_dict):
-    p = CONSTANT_P ** (len(atom_inds))
+    p = constants.CONSTANT_P ** (len(atom_inds))
     alpha = sum([alpha_dict[i] for i in atom_inds])
     k = [cross_alpha_distance_dict[i][j] for i, j in combinations(atom_inds, 2)]
-    k_exp = EXP ** (-sum(k) / alpha)
-    return p * k_exp * (PI / alpha) ** 1.5
+    k_exp = constants.EXP ** (-sum(k) / alpha)
+    return p * k_exp * (constants.PI / alpha) ** 1.5
 
 
 def _calc_overlap(
@@ -112,7 +109,7 @@ def calc_analytic_overlap_vol_recursive(
     )
     ref_len = len(ref_mol_coords_radii)
     all_radii = np.concatenate([ref_mol_coords_radii, fit_mol_coords_radii])
-    alpha_dict = {i: KAPPA / j[3] ** 2 for i, j in enumerate(all_radii)}
+    alpha_dict = {i: constants.KAPPA / j[3] ** 2 for i, j in enumerate(all_radii)}
     cross_alpha_dict = {
         (i, j): alpha_dict[i] * alpha_dict[j]
         for i in range(len(all_radii))
@@ -185,7 +182,7 @@ def calc_analytic_overlap_vol_iterative(ref_mol, fit_mol, n=6):
     fit_mol_coords_radii = fit_mol.get_atomic_coordinates_and_radii()
     ref_len = len(ref_mol_coords_radii)
     all_radii = np.concatenate([ref_mol_coords_radii, fit_mol_coords_radii])
-    alpha_dict = {i: KAPPA / j[3] ** 2 for i, j in enumerate(all_radii)}
+    alpha_dict = {i: constants.KAPPA / j[3] ** 2 for i, j in enumerate(all_radii)}
     cross_alpha_dict = {
         (i, j): alpha_dict[i] * alpha_dict[j]
         for i in range(len(all_radii))

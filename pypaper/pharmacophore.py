@@ -5,7 +5,7 @@ from rdkit.Chem import AllChem
 from rdkit.Geometry import Point3D
 from rdkit.Chem import rdchem
 
-PI = 3.14159265358
+from pypaper import constants
 
 RDKIT_PATH = os.environ.get("RDBASE")
 
@@ -51,8 +51,12 @@ def calc_pharmacophore(rdkit_mol):
 
 
 def calc_single_pharm_overlap(p1, p2):
-    r2 = (p1[2][0] - p2[2][0])**2 + (p1[2][1] - p2[2][1])**2 + (p1[2][2] - p2[2][2])**2
-    vol = 7.999999999 * pow(PI / (p1[3] + p2[3]), 1.5)
+    r2 = (
+        (p1[2][0] - p2[2][0]) ** 2
+        + (p1[2][1] - p2[2][1]) ** 2
+        + (p1[2][2] - p2[2][2]) ** 2
+    )
+    vol = (constants.CONSTANT_P**2) * pow(constants.PI / (p1[3] + p2[3]), 1.5)
     vol *= np.exp(-(p1[3] * p2[3]) * r2 / (p1[3] + p2[3]))
     return vol
 
