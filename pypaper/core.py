@@ -191,7 +191,12 @@ class GetSimilarityScores:
         }
 
         df = pd.DataFrame(df_data)
-        df["Prefix"] = df["Molecule"].str.split("_").str[0]
+
+        def _split_at_last_underscore(name):
+            parts = name.rsplit("_", 1)
+            return parts[0]
+
+        df["Prefix"] = df["Molecule"].apply(_split_at_last_underscore)
         df = df.sort_values(by=["Prefix", sort_by], ascending=[True, False])
         idx = (
             df.groupby("Prefix")
