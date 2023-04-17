@@ -12,6 +12,10 @@ except ImportError:
     pass
 
 
+Chem.SetDefaultPickleProperties(Chem.PropertyPickleOptions.AllProps | Chem.PropertyPickleOptions.ComputedProps)
+#Chem.SetDefaultPickleProperties(Chem.PropertyPickleOptions.ComputedProps)
+
+
 def convert_oeb_to_sdf(oeb_file, sdf_file, working_dir=None):
     """
     Convert an OpenEye OEB file to an sdf file.
