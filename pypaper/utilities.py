@@ -153,14 +153,14 @@ def sdf_to_rdmol(file_names, ignore_hs=True):
     return mols
 
 
-def process_molecule(rdkit_mol, opt, n_confs, keep_mol, **conf_kwargs):
-    mol = Molecule(rdkit_mol, opt=opt)
+def process_molecule(rdkit_mol, ignore_hs, n_confs, keep_mol, **conf_kwargs):
+    mol = Molecule(rdkit_mol)
     mol.center_mol()
     mol.project_mol()
     new_mol = copy.deepcopy(mol)
     if n_confs:
         new_mol.generate_conformers(n_confs, **conf_kwargs)
-        conformers = new_mol.process_confs(conf_kwargs.get("ff", "UFF"))
+        conformers = new_mol.process_confs(conf_kwargs.get("ff", "UFF"), ignore_hs)
         if keep_mol:
             return [mol] + conformers
         else:
