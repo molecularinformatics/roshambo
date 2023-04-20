@@ -137,8 +137,10 @@ def sdf_to_rdmol(file_names, ignore_hs=True):
     for file_name in file_names:
         if not os.path.isfile(file_name):
             continue
-        suppl = Chem.SDMolSupplier(file_name, removeHs=ignore_hs)
-        for mol in suppl:
+        supplier = Chem.SDMolSupplier(file_name, removeHs=ignore_hs)
+        for mol in supplier:
+            if not mol:
+                continue
             name = mol.GetProp("_Name")
             if name in used_names:
                 used_names[name] += 1
