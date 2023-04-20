@@ -169,6 +169,10 @@ def process_molecule(rdkit_mol, ignore_hs, n_confs, keep_mol, **conf_kwargs):
         return [mol]
 
 
+def process_molecule_with_kwargs(args, kwargs):
+    return process_molecule(*args, **kwargs)
+
+
 def prepare_mols(
     inputs,
     ignore_hs=True,
@@ -189,11 +193,12 @@ def prepare_mols(
     else:
         rdmols = smiles_to_rdmol(inputs, ignore_hs=ignore_hs)
 
+    input_data = [(rdmol, ignore_hs, n_confs, keep_mol) for rdmol in rdmols]
+    kwargs_list = [conf_kwargs] * len(input_data)
+
     with Pool() as pool:
-        results = pool.starmap(
-            process_molecule,
-            [(rdmol, opt, n_confs, keep_mol) for rdmol in rdmols],
-        )
+        results = pool.starmap(process_molecule_with_kwargs,
+                               zip(input_data, kwargs_list))
 
     for mols in results:
         for mol in mols:
