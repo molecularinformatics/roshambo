@@ -14,20 +14,9 @@ from rdkit.Chem import rdDistGeom
 
 
 class Molecule:
-    def __init__(self, rdkit_mol, opt=False):
+    def __init__(self, rdkit_mol):
         self.mol = rdkit_mol
-        # TODO: test this on xyz or pdb or other file types
         self.name = self.mol.GetProp("_Name")
-        if opt:
-            self.optimize_mol()
-
-    def optimize_mol(self, add_hs=False):
-        if add_hs:
-            self.mol = Chem.AddHs(self.mol)
-        AllChem.EmbedMolecule(
-            self.mol, useExpTorsionAnglePrefs=True, useBasicKnowledge=True
-        )
-        AllChem.UFFOptimizeMolecule(self.mol)
 
     def get_atomic_coordinates_and_radii(self, use_carbon_radii=False):
         atoms = self.mol.GetAtoms()
