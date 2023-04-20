@@ -63,6 +63,7 @@ class Molecule:
         random_seed=999,
         method="ETKDGv2",
         ff="UFF",
+        add_hs=True,
         opt_confs=False,
         calc_energy=False,
         energy_iters=200,
@@ -89,6 +90,9 @@ class Molecule:
         if rdkit_args:
             for k, v in rdkit_args.items():
                 setattr(args, k, v)
+
+        if add_hs:
+            self.mol = AllChem.AddHs(self.mol)
 
         # Embed conformers
         confs = rdDistGeom.EmbedMultipleConfs(self.mol, numConfs=n_confs, params=args)
