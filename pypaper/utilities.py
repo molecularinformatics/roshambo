@@ -107,6 +107,8 @@ def smiles_to_rdmol(
     rdmols = []
     used_names = {}
     for file_name in file_names:
+        if not os.path.isfile(file_name):
+            continue
         supplier = rdmolfiles.SmilesMolSupplier(file_name, titleLine=0)
         mols = [mol for mol in supplier if mol is not None]
         for mol in mols:
