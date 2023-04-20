@@ -110,8 +110,9 @@ def smiles_to_rdmol(
         if not os.path.isfile(file_name):
             continue
         supplier = rdmolfiles.SmilesMolSupplier(file_name, titleLine=0)
-        mols = [mol for mol in supplier if mol is not None]
-        for mol in mols:
+        for mol in supplier:
+            if not mol:
+                continue
             mol = AllChem.AddHs(mol)
             AllChem.EmbedMolecule(mol)
             if ignore_hs:
