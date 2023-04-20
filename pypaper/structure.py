@@ -193,7 +193,7 @@ class Molecule:
                 mol, pyMMFFMolProperties=py_mmff, confId=conf_id
             )
 
-    def process_confs(self, ff):
+    def process_confs(self, ff, ignore_hs):
         conformers = []
         mol_copy = copy.deepcopy(self.mol)
         for i, conf in enumerate(mol_copy.GetConformers()):
@@ -205,6 +205,8 @@ class Molecule:
                 prop_name = f"rdkit_{ff}_{prop}"
                 prop_val = conf.GetDoubleProp(prop_name)
                 conformer_mol.SetDoubleProp(prop_name, prop_val)
+            if ignore_hs:
+                conformer_mol = AllChem.RemoveHs(conformer_mol)
             conformer_mol.SetProp("_Name", conformer_name)
             conformer = Molecule(conformer_mol)
             conformer.center_mol()
