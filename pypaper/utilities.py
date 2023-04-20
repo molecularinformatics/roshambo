@@ -5,6 +5,8 @@ import time
 from multiprocessing import Pool
 
 from rdkit import Chem
+from rdkit.Chem import rdmolfiles
+from rdkit.Chem import AllChem
 
 from pypaper.structure import Molecule
 
@@ -98,63 +100,32 @@ def split_sdf_file(
 
 
 def smiles_to_rdmol(
-    smiles,
+    file_names,
     ignore_hs=True,
-    sanitize=True,
-    allow_cxsmiles=True,
-    parse_name=False,
-    strict_cxsmiles=False,
     name_prefix="mol",
 ):
-    """
-    Converts SMILES strings or a SMILES file into RDKit molecule objects.
-
-    Parameters:
-        - smiles (str or list): SMILES string(s) or a path to a SMILES file.
-        - ignore_hs (bool): Whether to ignore hydrogens in the molecule (default True).
-        - sanitize (bool): Whether to sanitize the molecule after construction (default True).
-        - allow_cxsmiles (bool): Whether to allow CXSMILES (default True).
-        - parse_name (bool): Whether to parse the molecule name from the SMILES string (default False).
-        - strict_cxsmiles (bool): Whether to strictly enforce CXSMILES syntax (default False).
-        - name_prefix (str): A prefix to use when naming the molecules (default "mol").
-
-    Returns:
-        A list of RDKit molecule objects.
-    """
-    params = Chem.SmilesParserParams()
-    params.removeHs = ignore_hs
-    params.sanitize = sanitize
-    params.allowCXSMILES = allow_cxsmiles
-    params.parseName = parse_name
-    params.strictCXSMILES = strict_cxsmiles
-
-    mols = []
-    count = 0
-    if isinstance(smiles, str):
-        smiles = [smiles]
-    for smi in smiles:
-        if os.path.isfile(smi):
-            with open(smi, "r", newline="") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line or line.startswith("#"):
-                        continue
-                    mol = Chem.MolFromSmiles(line, params=params)
-                    if mol is not None:
-                        mol.SetProp("_Name", f"{name_prefix}_{count}")
-                        mols.append(mol)
-                        count += 1
-        else:
-            mol = Chem.MolFromSmiles(smi, params=params)
-            if mol is not None:
-                mol.SetProp("_Name", f"{name_prefix}_{count}")
-                mols.append(mol)
-                count += 1
-
-    if not mols:
+    rdmols = []
+    used_names = {}
+    for file_name in file_names:
+        supplier = rdmolfiles.SmilesMolSupplier(file_name, titleLine=0)
+        mols = [mol for mol in supplier if mol is not None]
+        for mol in mols:
+            mol = AllChem.AddHs(mol)
+            AllChem.EmbedMolecule(mol)
+            if ignore_hs:
+                mol = AllChem.RemoveHs(mol)
+            name = mol.GetProp("_Name") or name_prefix
+            if name in used_names:
+                used_names[name] += 1
+                new_name = f"{name}_{used_names[name]}"
+            else:
+                used_names[name] = 0
+                new_name = f"{name}_0"
+            mol.SetProp("_Name", new_name)
+            rdmols.append(mol)
+    if not rdmols:
         raise ValueError("No valid molecules found in input.")
-
-    return mols
+    return rdmols
 
 
 def sdf_to_rdmol(file_names, ignore_hs=True):
