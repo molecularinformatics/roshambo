@@ -42,7 +42,6 @@ def calc_roc_auc(
 
     # Calculate the ROC curve and AUC
     fpr, tpr, thresholds = roc_curve(combined_df["True Label"], combined_df[score])
-    print(fpr)
     auc = roc_auc_score(combined_df["True Label"], combined_df[score])
 
     # Define the EEVs of interest
@@ -54,30 +53,21 @@ def calc_roc_auc(
 
     # Loop over the EEVs and compute the ROCE at each EEV
     for i, eev in enumerate(eevs):
-        for frac in fpr:
-            if frac >= eev:
+        # Calculate the index corresponding to the EEV
+        for fpr_eev in fpr:
+            if fpr_eev >= eev:
                 break
             else:
                 continue
-        # i1 = fpr.index(frac)
-        i1 = np.where(fpr == frac)[0][0]
-        y = tpr[i1]
-        print("new", i1, frac, y, y/frac)
-
-        # Calculate the index corresponding to the EEV
-        index = int(len(fpr) * eev)
+        index = np.where(fpr == fpr_eev)[0][0]
+        tpr_eev = tpr[index]
 
         # Compute the TPR and FPR at the selected index
         tpr_eev = tpr[index]
-        fpr_eev = fpr[index]
-        print("old", index, fpr_eev, tpr_eev, tpr_eev/fpr_eev)
-        print("newest", (np.abs(fpr - eev)).argmin())
 
         # Compute the ROCE at the selected EEV
         roce = tpr_eev / fpr_eev
         roce_values[i] = roce
-
-        print(eev, tpr_eev*(len(actives_df)) / (len(actives_df) * eev))
 
     # Print the ROCE values at each EEV
     for i, eev in enumerate(eevs):
