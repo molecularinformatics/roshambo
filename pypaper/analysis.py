@@ -54,16 +54,17 @@ def calc_roc_auc(
     # Loop over the EEVs and compute the ROCE at each EEV
     for i, eev in enumerate(eevs):
         # Calculate the index corresponding to the EEV
-        for fpr_eev in fpr:
-            if fpr_eev >= eev:
-                break
-            else:
-                continue
-        index = np.where(fpr == fpr_eev)[0][0]
-        tpr_eev = tpr[index]
+        # for fpr_eev in fpr:
+        #     if fpr_eev >= eev:
+        #         break
+        #     else:
+        #         continue
+        # index = np.where(fpr == fpr_eev)[0][0]
+        index = np.searchsorted(fpr, eev, side="right")
 
         # Compute the TPR and FPR at the selected index
         tpr_eev = tpr[index]
+        fpr_eev = fpr[index]
 
         # Compute the ROCE at the selected EEV
         roce = tpr_eev / fpr_eev
