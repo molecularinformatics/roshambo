@@ -16,10 +16,15 @@ def calc_roc_auc(
 ):
     actives_df = pd.read_csv(actives_file, sep="\t")
     decoys_df = pd.read_csv(decoys_file, sep="\t")
+
     # Create a combined dataframe with the true labels and the scores
     combined_df = pd.concat([actives_df, decoys_df], ignore_index=True)
     combined_df["True Label"] = [1] * len(actives_df) + [0] * len(decoys_df)
     combined_df.sort_values(score, ascending=False, inplace=True)
+
+    # Define the EEVs of interest
+    if not eevs:
+        eevs = [0.005, 0.01, 0.02, 0.05]
 
     # Initialize an array to store the bootstrap AUC values
     auc_values = np.zeros(n_bootstraps)
