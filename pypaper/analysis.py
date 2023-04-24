@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -107,6 +109,64 @@ def calc_roc_auc(
     df_rates = pd.DataFrame({"FPR": fpr, "TPR": tpr})
     df_rates.to_csv("roc.csv", sep="\t", index=False)
     return df, df_rates
+
+
+def plot_roc_data(
+    rates_dict,
+    analysis_dict,
+    colors_dict=None,
+    title="ROC",
+    figsize=(6, 5),
+        filename="roc_comparison.jpg",
+):
+    # Checkpoint 1: Check if the lengths of rates_dict and analysis_dict are equal
+    # and greater than or equal to 2
+    if (
+        len(rates_dict) != len(analysis_dict)
+        or len(rates_dict) < 2
+        or len(analysis_dict) < 2
+    ):
+        raise ValueError(
+            "Lengths of rates_dict and analysis_dict must be equal and "
+            "greater than or equal to 2"
+        )
+
+    # Checkpoint 2: Generate random colors if colors_dict is not provided or
+    # is not of the same length as rates_dict and analysis_dict
+    if not colors_dict or len(colors_dict) != len(rates_dict):
+        colors_dict = {
+            key: f"#{random.randint(0x000000, 0xFFFFFF):06x}"
+            for key in rates_dict.keys()
+        }
+
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.plot([0, 1], [0, 1], linestyle="--", color="black", label="Random guess")
+
+    for key in rates_dict.keys():
+        df = pd.read_csv(rates_dict[key], sep="\t")
+        auc_df = pd.read_csv(analysis_dict[key], sep="\t")
+        auc_mean = auc_df.loc[auc_df["Run Name"] == "AUC", "Mean"].values[0]
+        color = colors_dict[key]
+        label = f"{key.capitalize()} (AUC={auc_mean:.2f})"
+        ax.plot(df["FPR"], df["TPR"], label=label, color=color, linewidth=2)
+
+    # Set axis labels and legend
+    ax.set_xlabel("False Positive Rate", fontsize=18, fontweight="bold")
+    ax.set_ylabel("True Positive Rate", fontsize=18, fontweight="bold")
+    ax.legend(frameon=False, fontsize=18)
+
+    # Set title and border thickness
+    ax.set_title(title, fontsize=22, fontweight="bold")
+    ax.spines["top"].set_linewidth(2)
+    ax.spines["bottom"].set_linewidth(2)
+    ax.spines["left"].set_linewidth(2)
+    ax.spines["right"].set_linewidth(2)
+
+    # Set ticks
+    ax.tick_params(axis="both", which="both", direction="in", length=6, labelsize=18)
+
+    # Save the plot
+    plt.savefig(filename, dpi=500, bbox_inches="tight")
 
 
 # # set the positions of the bars and error bars
