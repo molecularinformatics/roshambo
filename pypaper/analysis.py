@@ -167,57 +167,89 @@ def plot_mult_roc(
     plt.savefig(filename, dpi=500, bbox_inches="tight")
 
 
-# # set the positions of the bars and error bars
-# pos = np.arange(len(rocs))
-# width = 0.35
-#
-# # create the figure and axis objects
-# fig, ax = plt.subplots()
-#
-# # plot the bars and error bars
-# fig, ax = plt.subplots()
-# ax.bar(pos, rocs, width, yerr=[np.array(rocs)-np.array(rocs_lower), np.array(rocs_upper)-np.array(rocs)], alpha=0.5, color='b', label='rocs')
-# ax.bar(pos+width, pypaper, width, yerr=[np.array(pypaper)-np.array(pypaper_lower), np.array(pypaper_upper)-np.array(pypaper)], alpha=0.5, color='g', label='pypaper')
-# ax.tick_params(direction='in', labelsize=16, length=6)
-# for spine in ["top", "bottom", "left", "right"]:
-#     ax.spines[spine].set_linewidth(2)
-# ax.set_xlabel('Dataset', fontsize=18, fontweight="bold")
-# ax.set_ylabel('Mean AUC', fontsize=18, fontweight="bold")
-# ax.set_xticks(pos+width/2)
-# ax.set_xticklabels(['aces', 'adrb1', 'egfr', 'jak2'], fontsize=18,)
-# ax.set_title('Mean AUC with 95% confidence interval', fontsize=18, fontweight="bold")
-# ax.legend(fontsize=16, frameon=False, bbox_to_anchor=(1.02, 0.5), loc='center left')
-# plt.savefig("auc_rocs.jpg", dpi=500, bbox_inches="tight")
-#
-#
-# import matplotlib.pyplot as plt
-# import numpy as np
-#
-# pos = np.arange(len(rocs))
-# width = 0.35
-#
-# # create the figure and axis objects
-# fig, ax = plt.subplots()
-#
-# # plot the bars for rocs and pypaper
-# for i in range(len(rocs[0])):
-#     print(i, [sum(row[:i+1]) for row in rocs])
-#     ax.bar(pos, [row[i] for row in rocs], width, alpha=0.5, color='b', label='rocs' if i == 0 else None, bottom=[sum(row[:i+1]) for row in rocs])
-#
-# for i in range(len(pypaper[0])):
-#     ax.bar(pos+width, [row[i] for row in pypaper], width, alpha=0.5, color='g', label='pypaper' if i == 0 else None, bottom=[sum(row[:i+1]) for row in pypaper])
-#
-# # set the axis labels and title
-# ax.set_ylabel('Values')
-# ax.set_xticks(pos+width/2)
-# ax.set_xticklabels(['1', '2', '3', '4'])
-# ax.set_title('Stacked Bar Plot')
-#
-# # add a legend
-# ax.legend()
-#
+def plot_mult_auc(
+    auc_dict,
+    colors=None,
+    title="Mean AUC with 95% confidence interval",
+    group_labels=None,
+):
+    # Checkpoint 1: Check if all values in auc_dict have the same length
+    lengths = set(len(v) for v in auc_dict.values())
+    if len(lengths) != 1:
+        raise ValueError("All values in auc_dict must have the same length")
 
-# fig, ax = plt.subplots()
+    # Read in AUC data from each file in the dictionary and store them in a list
+    auc_data = []
+    for key, paths in auc_dict.items():
+        for i, path in enumerate(paths):
+            df = pd.read_csv(path, sep="\t")
+            mean = df.loc[df["Run Name"] == "AUC", "Mean"].values[0]
+            lower = df.loc[df["Run Name"] == "AUC", "CI_Lower"].values[0]
+            upper = df.loc[df["Run Name"] == "AUC", "CI_Upper"].values[0]
+            auc_data.append(
+                {"label": key, "mean": mean, "lower": lower, "upper": upper, "group": i}
+            )
+
+    # Sort the data by group number
+    auc_data = sorted(auc_data, key=lambda x: x["group"])
+
+    # Set the positions and width of the bars
+    pos = np.arange(len(auc_data) // len(auc_dict))
+    width = 0.8 / len(auc_dict)
+
+    if group_labels and len(group_labels) != len(auc_data) // len(auc_dict):
+        raise ValueError(
+            "The provided group_labels must have the same length as "
+            "the number of groups"
+        )
+
+    # Checkpoint 2: Generate random colors if colors is not provided or
+    # is not of the same length as auc_dict
+    if not colors or len(colors) != len(auc_dict):
+        colors = {
+            key: f"#{random.randint(0x000000, 0xFFFFFF):06x}" for key in auc_dict.keys()
+        }
+
+    # Create the figure and axis objects
+    fig, ax = plt.subplots()
+    xs = []
+    # Plot the bars and error bars for each dataset
+    for i, data in enumerate(auc_data):
+        x = pos[data["group"]] + i * width
+        xs.append(x)
+        ax.bar(
+            x,
+            data["mean"],
+            width,
+            yerr=[[data["mean"] - data["lower"]], [data["upper"] - data["mean"]]],
+            color=colors[data["label"]],
+            label=data["label"] if i < len(auc_dict) else "",
+            capsize=5,
+        )
+
+    # Set axis labels and legend
+    ax.set_xlabel("Dataset", fontsize=18, fontweight="bold")
+    ax.set_ylabel("Mean AUC", fontsize=18, fontweight="bold")
+    ax.set_yticks(np.arange(0.2, 1.1, 0.2))
+    ax.set_ylim(0, 1.1)
+    ax.set_xticks(np.mean(np.array(xs).reshape(-1, 2), axis=1))
+
+    if not group_labels:
+        group_labels = [f"Data {i + 1}" for i in range(len(auc_data) // len(auc_dict))]
+    ax.set_xticklabels(group_labels, fontsize=18)
+    ax.legend(fontsize=16, frameon=False, bbox_to_anchor=(1.02, 0.5), loc="center left")
+
+    # Set title and border thickness
+    ax.set_title(title, fontsize=18, fontweight="bold")
+    for spine in ["top", "bottom", "left", "right"]:
+        ax.spines[spine].set_linewidth(2)
+
+    # Set ticks
+    ax.tick_params(direction="in", labelsize=16, length=6)
+
+    # Save the plot
+    plt.savefig("auc_plot.jpg", dpi=500, bbox_inches="tight")
+
 # width = 0.35
 # x = np.arange(4)
 # pos1 = x - width / 2
