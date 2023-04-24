@@ -103,9 +103,7 @@ def calc_roc_auc(
     df.to_csv("analysis.csv", sep="\t", index=False)
 
     # Compute FPR and TPR from full data
-    fpr, tpr, thresholds = roc_curve(
-        combined_df["True Label"], combined_df[score]
-    )
+    fpr, tpr, thresholds = roc_curve(combined_df["True Label"], combined_df[score])
     df_rates = pd.DataFrame({"FPR": fpr, "TPR": tpr})
     df_rates.to_csv("roc.csv", sep="\t", index=False)
     return df, df_rates
@@ -117,7 +115,7 @@ def plot_mult_roc(
     colors_dict=None,
     title="ROC",
     figsize=(6, 5),
-        filename="roc_comparison.jpg",
+    filename="roc_comparison.jpg",
 ):
     # Checkpoint 1: Check if the lengths of rates_dict and analysis_dict are equal
     # and greater than or equal to 2
