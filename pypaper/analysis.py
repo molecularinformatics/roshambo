@@ -111,7 +111,7 @@ def calc_roc_auc(
     return df, df_rates
 
 
-def plot_roc_data(
+def plot_mult_roc(
     rates_dict,
     analysis_dict,
     colors_dict=None,
