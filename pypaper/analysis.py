@@ -250,23 +250,122 @@ def plot_mult_auc(
     # Save the plot
     plt.savefig("auc_plot.jpg", dpi=500, bbox_inches="tight")
 
-# width = 0.35
-# x = np.arange(4)
-# pos1 = x - width / 2
-# pos2 = x + width / 2
-# bars1 = ax.bar(pos1, rocs[0], width, color="#807FFF", label='1% Enrichment')
-# bars2 = ax.bar(pos1, rocs[1], width, color="#7FC080", bottom=rocs[0], label='2% Enrichment')
-# bars3 = ax.bar(pos1, rocs[2], width, color="gray", bottom=rocs[0]+rocs[1], label='5% Enrichment')
-# bars4 = ax.bar(pos2, pypaper[0], width, color="#807FFF",)
-# bars5 = ax.bar(pos2, pypaper[1], width, color="#7FC080", bottom=pypaper[0])
-# bars6 = ax.bar(pos2, pypaper[2], width, color="gray", bottom=pypaper[0]+pypaper[1])
-# ax.tick_params(direction='in', labelsize=16, length=6)
-# for spine in ["top", "bottom", "left", "right"]:
-#     ax.spines[spine].set_linewidth(2)
-# ax.set_xlabel('Dataset', fontsize=18, fontweight="bold")
-# ax.set_ylabel('Enrichment Factor', fontsize=18, fontweight="bold")
-# ax.set_xticks(pos1+width/2)
-# ax.set_xticklabels(['aces', 'adrb1', 'egfr', 'jak2'], fontsize=18,)
-# ax.set_title('ROCS vs. PYPAPER', fontsize=18, fontweight="bold")
-# ax.legend(fontsize=16, frameon=False, bbox_to_anchor=(1.02, 0.5), loc='center left')
-# plt.savefig("auc_rocs2.jpg", dpi=500, bbox_inches="tight")
+
+def plot_mult_enrichment(
+    enrich_dict,
+    colors_dict=None,
+    title="Enrichment factors with percentage cutoffs",
+    group_labels=None,
+    hatch_patterns=None,
+):
+    num_datasets = len(enrich_dict.keys())
+    num_groups = len(next(iter(enrich_dict.values())))
+
+    # Read in enrichment data
+    enrich_data = {
+        key: [pd.read_csv(path, sep="\t") for path in paths]
+        for key, paths in enrich_dict.items()
+    }
+
+    fig, ax = plt.subplots()
+
+    # Set the positions and width of the bars
+    bar_width_fraction = 0.8
+    bar_width = bar_width_fraction / num_datasets
+    pos = np.arange(num_groups)
+
+    # Generate a list of hatch patterns if not provided
+    if not hatch_patterns:
+        hatch_patterns = ["/", "\\", "|", "-", "+", "x", "o", "O", ".", "*"]
+
+    # Get the number of components in the stack
+    num_colors = len(
+        pd.read_csv(next(iter(enrich_dict.values()))[0], sep="\t")[
+            pd.read_csv(next(iter(enrich_dict.values()))[0], sep="\t")[
+                "Run Name"
+            ].str.contains("% Enrichment")
+        ]
+    )
+
+    # Generate colors_dict if not provided or if not provided with the
+    # correct number of colors
+    if not colors_dict or len(colors_dict) != num_colors:
+        colors_dict = {
+            i: plt.cm.viridis(i / (num_colors - 1)) for i in range(num_colors)
+        }
+
+    # Plot the stacked bars for each dataset
+    type_handles = []
+    factor_handles = []
+    for i, (key, dfs) in enumerate(enrich_data.items()):
+        bottom = np.zeros(num_groups)
+        hatch_pattern = hatch_patterns[i % len(hatch_patterns)]
+        type_handles.append(
+            plt.Rectangle(
+                (0, 0),
+                1,
+                1,
+                facecolor="w",
+                hatch=hatch_pattern,
+                label=key,
+                edgecolor="k",
+            )
+        )
+        for idx, df in enumerate(dfs):
+            enrichments = df[df["Run Name"].str.contains("% Enrichment")]["Mean"].values
+            enrichment_labels = df[df["Run Name"].str.contains("% Enrichment")][
+                "Run Name"
+            ].values
+            for j, enrichment in enumerate(enrichments):
+                ax.bar(
+                    pos + i * bar_width,
+                    enrichment,
+                    bar_width,
+                    bottom=bottom[idx],
+                    color=colors_dict[j],
+                    hatch=hatch_pattern,
+                )
+                bottom[idx] += enrichment
+                if i == 0 and idx == 0:
+                    factor_handles.append(
+                        plt.Rectangle(
+                            (0, 0),
+                            1,
+                            1,
+                            color=colors_dict[j],
+                            label=enrichment_labels[j],
+                            edgecolor="k",
+                        )
+                    )
+
+    # Set axis labels and legend
+    ax.set_xlabel("Dataset", fontsize=18, fontweight="bold")
+    ax.set_ylabel("Enrichment Factor", fontsize=18, fontweight="bold")
+    ax.set_xticks(pos + bar_width * num_datasets / 2)
+    ax.set_xticklabels(group_labels, fontsize=18)
+    leg1 = ax.legend(
+        handles=type_handles,
+        fontsize=16,
+        frameon=False,
+        bbox_to_anchor=(1.02, 1),
+        loc="upper left",
+    )
+    ax.add_artist(leg1)
+    ax.legend(
+        handles=factor_handles,
+        fontsize=16,
+        frameon=False,
+        bbox_to_anchor=(1.02, 0.5),
+        loc="center left",
+    )
+
+    # Set title and border thickness
+    ax.set_title(title, fontsize=18, fontweight="bold")
+    for spine in ["top", "bottom", "left", "right"]:
+        ax.spines[spine].set_linewidth(2)
+
+    # Set ticks
+    ax.tick_params(direction="in", labelsize=16, length=6)
+
+    # Save the plot
+    plt.savefig("enrichment.jpg", dpi=500, bbox_inches="tight")
