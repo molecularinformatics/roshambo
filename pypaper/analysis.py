@@ -122,9 +122,9 @@ def calc_roc_auc(
     df = pd.DataFrame(
         {
             "Run Name": ["AUC"] + [f"{str(i * 100)}% Enrichment" for i in eevs],
-            "Mean": np.insert(roce_values, 0, mean_auc),
-            "CI_Lower": [ci_lower] + [np.nan] * len(eevs),
-            "CI_Upper": [ci_upper] + [np.nan] * len(eevs),
+            "Mean": np.insert(roce_mean, 0, mean_auc),
+            "CI_Lower": np.insert(ci_roce_lower, 0, ci_lower),
+            "CI_Upper": np.insert(ci_roce_upper, 0, ci_upper),
         }
     )
     df = df.round(2)
@@ -132,6 +132,7 @@ def calc_roc_auc(
 
     df_rates = pd.DataFrame({"FPR": fpr, "TPR": tpr})
     df_rates.to_csv("roc.csv", sep="\t", index=False)
+    return df, df_rates
 
 
 # # set the positions of the bars and error bars
