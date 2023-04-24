@@ -24,6 +24,9 @@ def calc_roc_auc(
     # Initialize an array to store the bootstrap AUC values
     auc_values = np.zeros(n_bootstraps)
 
+    # Initialize an array to store the bootstrap ROCE values
+    roce_values = np.zeros((len(eevs), n_bootstraps))
+
     # Loop over the bootstrap samples
     for i in range(n_bootstraps):
         # Sample the data with replacement
