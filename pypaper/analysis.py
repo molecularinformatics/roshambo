@@ -100,6 +100,10 @@ def calc_roc_auc(
     df = df.round(2)
     df.to_csv("analysis.csv", sep="\t", index=False)
 
+    # Compute FPR and TPR from full data
+    fpr, tpr, thresholds = roc_curve(
+        combined_df["True Label"], combined_df[score]
+    )
     df_rates = pd.DataFrame({"FPR": fpr, "TPR": tpr})
     df_rates.to_csv("roc.csv", sep="\t", index=False)
     return df, df_rates
