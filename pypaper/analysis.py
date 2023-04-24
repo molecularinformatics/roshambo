@@ -12,6 +12,7 @@ def calc_roc_auc(
     n_bootstraps=1000,
     eevs=None,
     plot=True,
+    random_state=1,
 ):
     actives_df = pd.read_csv(actives_file, sep="\t")
     decoys_df = pd.read_csv(decoys_file, sep="\t")
@@ -26,7 +27,9 @@ def calc_roc_auc(
     # Loop over the bootstrap samples
     for i in range(n_bootstraps):
         # Sample the data with replacement
-        bootstrap_sample = combined_df.sample(frac=1, replace=True)
+        bootstrap_sample = combined_df.sample(
+            frac=1, replace=True, random_state=random_state
+        )
 
         # Calculate the AUC for the bootstrap sample
         auc_values[i] = roc_auc_score(
