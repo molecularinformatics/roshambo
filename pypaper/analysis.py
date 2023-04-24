@@ -80,7 +80,7 @@ def calc_roc_auc(
     # Plot the ROC curve
     if plot:
         fig, ax = plt.subplots()
-        plt.plot(fpr, tpr, label=f"ROC curve (AUC = {auc:.2f})")
+        plt.plot(fpr, tpr, label=f"ROC curve (AUC = {mean_auc:.2f})")
         plt.plot([0, 1], [0, 1], linestyle="--", color="black", label="Random guess")
         ax.tick_params(direction="in", labelsize=16, length=6)
         for spine in ["top", "bottom", "left", "right"]:
