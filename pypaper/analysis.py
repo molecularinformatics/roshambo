@@ -169,7 +169,7 @@ def plot_mult_roc(
 
 def plot_mult_auc(
     auc_dict,
-    colors=None,
+    colors_dict=None,
     title="Mean AUC with 95% confidence interval",
     group_labels=None,
 ):
