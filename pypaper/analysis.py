@@ -205,8 +205,8 @@ def plot_mult_auc(
 
     # Checkpoint 2: Generate random colors if colors is not provided or
     # is not of the same length as auc_dict
-    if not colors or len(colors) != len(auc_dict):
-        colors = {
+    if not colors_dict or len(colors_dict) != len(auc_dict):
+        colors_dict = {
             key: f"#{random.randint(0x000000, 0xFFFFFF):06x}" for key in auc_dict.keys()
         }
 
@@ -222,7 +222,7 @@ def plot_mult_auc(
             data["mean"],
             width,
             yerr=[[data["mean"] - data["lower"]], [data["upper"] - data["mean"]]],
-            color=colors[data["label"]],
+            color=colors_dict[data["label"]],
             label=data["label"] if i < len(auc_dict) else "",
             capsize=5,
         )
