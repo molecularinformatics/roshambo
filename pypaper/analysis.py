@@ -72,36 +72,6 @@ def calc_roc_auc(
     ci_roce_upper = np.percentile(roce_values, 97.5, axis=1)
     roce_mean = np.mean(roce_values, axis=1)
 
-    # # Calculate the ROC curve and AUC
-    # fpr, tpr, thresholds = roc_curve(combined_df["True Label"], combined_df[score])
-    # auc = roc_auc_score(combined_df["True Label"], combined_df[score])
-    #
-    # # Initialize an array to store the ROCE values
-    # roce_values = np.zeros(len(eevs))
-    #
-    # # Loop over the EEVs and compute the ROCE at each EEV
-    # for i, eev in enumerate(eevs):
-    #     # Calculate the index corresponding to the EEV
-    #     # for fpr_eev in fpr:
-    #     #     if fpr_eev >= eev:
-    #     #         break
-    #     #     else:
-    #     #         continue
-    #     # index = np.where(fpr == fpr_eev)[0][0]
-    #     index = np.searchsorted(fpr, eev, side="right")
-    #
-    #     # Compute the TPR and FPR at the selected index
-    #     tpr_eev = tpr[index]
-    #     fpr_eev = fpr[index]
-    #
-    #     # Compute the ROCE at the selected EEV
-    #     roce = tpr_eev / fpr_eev
-    #     roce_values[i] = roce
-    #
-    # # Print the ROCE values at each EEV
-    # for i, eev in enumerate(eevs):
-    #     print(f"ROCE at {eev * 100}%: {roce_values[i]:.2f}")
-
     # Plot the ROC curve
     if plot:
         fig, ax = plt.subplots()
