@@ -1,6 +1,7 @@
 import os
 import copy
 import time
+import logging
 
 from multiprocessing import Pool
 
@@ -100,22 +101,29 @@ def split_sdf_file(
 
 
 def smiles_to_rdmol(
-    file_names,
-    ignore_hs=True,
-    name_prefix="mol",
-    delimiter=" ",
+    file_names, ignore_hs=True, name_prefix="mol", smiles_kwargs=None, embed_kwargs=None
 ):
     rdmols = []
     used_names = {}
+    if smiles_kwargs is None:
+        smiles_kwargs = {}
+    if embed_kwargs is None:
+        embed_kwargs = {}
     for file_name in file_names:
         if not os.path.isfile(file_name):
             continue
-        supplier = rdmolfiles.SmilesMolSupplier(file_name, delimiter=delimiter)
+        supplier = rdmolfiles.SmilesMolSupplier(file_name, **smiles_kwargs)
         for mol in supplier:
             if not mol:
                 continue
             mol = AllChem.AddHs(mol)
-            AllChem.EmbedMolecule(mol)
+            id = AllChem.EmbedMolecule(mol, **embed_kwargs)
+            if id != 0:
+                logging.warning(
+                    f"Embedding failed for molecule with SMILES: "
+                    f"{Chem.MolToSmiles(mol)}. Skipping this molecule."
+                )
+                continue
             if ignore_hs:
                 mol = AllChem.RemoveHs(mol)
             name = mol.GetProp("_Name") or name_prefix
@@ -179,7 +187,9 @@ def prepare_mols(
     ignore_hs=True,
     n_confs=10,
     keep_mol=False,
-    delimiter=" ",
+    name_prefix="mol",
+    smiles_kwargs=None,
+    embed_kwargs=None,
     **conf_kwargs,
 ):
     st = time.time()
@@ -192,7 +202,7 @@ def prepare_mols(
     if is_sdf_input:
         rdmols = sdf_to_rdmol(inputs, ignore_hs=ignore_hs)
     else:
-        rdmols = smiles_to_rdmol(inputs, ignore_hs=ignore_hs, delimiter=delimiter)
+        rdmols = smiles_to_rdmol(inputs, ignore_hs, name_prefix, smiles_kwargs, embed_kwargs)
 
     input_data = [(rdmol, ignore_hs, n_confs, keep_mol) for rdmol in rdmols]
     kwargs_list = [conf_kwargs] * len(input_data)
