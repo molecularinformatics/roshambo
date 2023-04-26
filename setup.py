@@ -19,10 +19,8 @@ for component in MyRDKit_FIND_COMPONENTS:
     RDKIT_LIBRARIES.append(library_path)
 
 PAPER_DIR = "/UserUCDD/ratwi/pypaper/paper/"
-OBPATH = "/UserUCDD/ratwi/openbabel/include/openbabel-2.0"
 CCFLAGS = [
     "-O2",
-    "-I" + OBPATH,
     "-I" + RDKIT_INCLUDE_DIR,
     "-DORIG_GLOBAL",
     "-DFAST_OVERLAP",
@@ -30,7 +28,9 @@ CCFLAGS = [
     "-D_GLIBCXX_USE_CXX11_ABI=0",
 ]
 PTXFLAGS = ["-Xcompiler", "-O2", "-arch", "sm_50", "-Xptxas", "-v"]
-LDFLAGS = ["-L" + RDKIT_LIB_DIR, "-L" + "/UserUCDD/ratwi/openbabel/lib"]
+LDFLAGS = [
+    "-L" + RDKIT_LIB_DIR,
+]
 
 
 def locate_cuda():
@@ -63,7 +63,6 @@ def customize_compiler_for_nvcc(self):
             self.set_executable("compiler_so", CUDA["nvcc"])
             postargs = [
                 "-I" + RDKIT_INCLUDE_DIR,
-                "-I" + OBPATH,
                 "-x",
                 "cu",
                 "-std=c++11",
@@ -105,7 +104,7 @@ ext = Extension(
     ],
     include_dirs=[CUDA["include"], PAPER_DIR, RDKIT_INCLUDE_DIR],
     library_dirs=[CUDA["lib64"], PAPER_DIR, RDKIT_LIB_DIR],
-    libraries=["cudart", "openbabel", "RDKitGraphMol"],
+    libraries=["cudart", "RDKitGraphMol"],
     language="c++",
     runtime_library_dirs=[CUDA["lib64"], PAPER_DIR],
     extra_compile_args={
