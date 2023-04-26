@@ -242,7 +242,7 @@ def plot_mult_auc(
     ax.set_ylabel("Mean AUC", fontsize=18, fontweight="bold")
     ax.set_yticks(np.arange(0.2, 1.1, 0.2))
     ax.set_ylim(0, 1.1)
-    ax.set_xticks(np.mean(np.array(xs).reshape(-1, 2), axis=1))
+    ax.set_xticks(np.mean(np.array(xs).reshape(-1, len(auc_dict)), axis=1))
 
     if not group_labels:
         group_labels = [f"Data {i + 1}" for i in range(len(auc_data) // len(auc_dict))]
