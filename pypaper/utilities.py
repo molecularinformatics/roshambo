@@ -208,8 +208,9 @@ def prepare_mols(
     kwargs_list = [conf_kwargs] * len(input_data)
 
     with Pool() as pool:
-        results = pool.starmap(process_molecule_with_kwargs,
-                               zip(input_data, kwargs_list))
+        results = pool.starmap(
+            process_molecule_with_kwargs, zip(input_data, kwargs_list)
+        )
 
     for mols in results:
         for mol in mols:
