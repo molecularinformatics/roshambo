@@ -213,7 +213,7 @@ def plot_mult_auc(
             "the number of groups"
         )
 
-    # Checkpoint 2: Generate random colors if colors is not provided or
+    # Checkpoint 2: Generate random colors if colors_dict is not provided or
     # is not of the same length as auc_dict
     if not colors_dict or len(colors_dict) != len(auc_dict):
         colors_dict = {
