@@ -40,16 +40,21 @@ def calc_roc_auc(
         bootstrap_sample = combined_df.sample(
             frac=1, replace=True, random_state=random_state
         )
+        # Check if there are at least two unique labels in the sample
+        if len(bootstrap_sample["True Label"].unique()) < 2:
+            auc_values[i] = np.nan
+            roce_values[:, i] = np.nan
+            continue
+        else:
+            # Calculate the AUC for the bootstrap sample
+            auc_values[i] = roc_auc_score(
+                bootstrap_sample["True Label"], bootstrap_sample[score]
+            )
 
-        # Calculate the AUC for the bootstrap sample
-        auc_values[i] = roc_auc_score(
-            bootstrap_sample["True Label"], bootstrap_sample[score]
-        )
-
-        # Calculate the ROC curve and AUC for the bootstrap sample
-        fpr, tpr, thresholds = roc_curve(
-            bootstrap_sample["True Label"], bootstrap_sample[score]
-        )
+            # Calculate the ROC curve and AUC for the bootstrap sample
+            fpr, tpr, thresholds = roc_curve(
+                bootstrap_sample["True Label"], bootstrap_sample[score]
+            )
 
         # Loop over the EEVs and compute the ROCE for the bootstrap sample
         for j, eev in enumerate(eevs):
@@ -65,14 +70,14 @@ def calc_roc_auc(
             roce_values[j, i] = roce
 
     # Compute the 95% confidence interval and mean for the AUC
-    ci_lower = np.percentile(auc_values, 2.5)
-    ci_upper = np.percentile(auc_values, 97.5)
-    mean_auc = np.mean(auc_values)
+    ci_lower = np.nanpercentile(auc_values, 2.5)
+    ci_upper = np.nanpercentile(auc_values, 97.5)
+    mean_auc = np.nanmean(auc_values)
 
     # Compute the 95% confidence interval for the ROCE and mean at each EEV
-    ci_roce_lower = np.percentile(roce_values, 2.5, axis=1)
-    ci_roce_upper = np.percentile(roce_values, 97.5, axis=1)
-    roce_mean = np.mean(roce_values, axis=1)
+    ci_roce_lower = np.nanpercentile(roce_values, 2.5, axis=1)
+    ci_roce_upper = np.nanpercentile(roce_values, 97.5, axis=1)
+    roce_mean = np.nanmean(roce_values, axis=1)
 
     # Plot the ROC curve
     if plot:
