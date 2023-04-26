@@ -322,6 +322,7 @@ def plot_mult_enrichment(
                 edgecolor="k",
             )
         )
+        x = pos + i * bar_width
         for idx, df in enumerate(dfs):
             enrichments = df[df["Run Name"].str.contains("% Enrichment")]["Mean"].values
             enrichment_labels = df[df["Run Name"].str.contains("% Enrichment")][
@@ -329,7 +330,7 @@ def plot_mult_enrichment(
             ].values
             for j, enrichment in enumerate(enrichments):
                 ax.bar(
-                    pos + i * bar_width,
+                    x[idx],
                     enrichment,
                     bar_width,
                     bottom=bottom[idx],
