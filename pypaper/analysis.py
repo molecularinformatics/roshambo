@@ -352,8 +352,9 @@ def plot_mult_enrichment(
     # Set axis labels and legend
     ax.set_xlabel("Dataset", fontsize=18, fontweight="bold")
     ax.set_ylabel("Enrichment Factor", fontsize=18, fontweight="bold")
-    ax.set_xticks(pos + bar_width * num_datasets / 2)
+    ax.set_xticks(pos + bar_width * (num_datasets - 1) / 2)
     ax.set_xticklabels(group_labels, fontsize=18)
+
     leg1 = ax.legend(
         handles=type_handles,
         fontsize=16,
