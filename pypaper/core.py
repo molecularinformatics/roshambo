@@ -39,7 +39,6 @@ class GetSimilarityScores:
         self,
         ref_file,
         dataset_files_pattern,
-        opt=False,
         ignore_hs=False,
         n_confs=10,
         keep_mol=False,
