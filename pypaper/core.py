@@ -55,7 +55,6 @@ class GetSimilarityScores:
 
         ref_mol, _ = prepare_mols(
             [self.ref_file],
-            opt=opt,
             ignore_hs=ignore_hs,
             n_confs=0,
             keep_mol=True,
@@ -65,7 +64,6 @@ class GetSimilarityScores:
         # TODO:Check if saving all molecules into numpy arrays will cause memory leaks
         self.dataset_mols, self.dataset_names = prepare_mols(
             self.dataset_files,
-            opt=opt,
             ignore_hs=ignore_hs,
             n_confs=n_confs,
             keep_mol=keep_mol,

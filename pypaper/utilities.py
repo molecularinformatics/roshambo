@@ -177,7 +177,6 @@ def process_molecule_with_kwargs(args, kwargs):
 def prepare_mols(
     inputs,
     ignore_hs=True,
-    opt=False,
     n_confs=10,
     keep_mol=False,
     delimiter=" ",
