@@ -172,6 +172,7 @@ def plot_mult_auc(
     colors_dict=None,
     title="Mean AUC with 95% confidence interval",
     group_labels=None,
+    figsize=(8, 6),
 ):
     # Checkpoint 1: Check if all values in auc_dict have the same length
     lengths = set(len(v) for v in auc_dict.values())
@@ -211,7 +212,7 @@ def plot_mult_auc(
         }
 
     # Create the figure and axis objects
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=figsize)
     xs = []
     # Plot the bars and error bars for each dataset
     for i, data in enumerate(auc_data):
@@ -257,6 +258,7 @@ def plot_mult_enrichment(
     title="Enrichment factors with percentage cutoffs",
     group_labels=None,
     hatch_patterns=None,
+    figsize=(8, 6),
 ):
     num_datasets = len(enrich_dict.keys())
     num_groups = len(next(iter(enrich_dict.values())))
@@ -267,7 +269,7 @@ def plot_mult_enrichment(
         for key, paths in enrich_dict.items()
     }
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=figsize)
 
     # Set the positions and width of the bars
     bar_width_fraction = 0.8
