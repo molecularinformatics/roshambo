@@ -15,6 +15,7 @@ def calc_roc_auc(
     eevs=None,
     plot=True,
     random_state=None,
+    interpolation=False,
 ):
     actives_df = pd.read_csv(actives_file, sep="\t")
     decoys_df = pd.read_csv(decoys_file, sep="\t")
@@ -56,18 +57,21 @@ def calc_roc_auc(
                 bootstrap_sample["True Label"], bootstrap_sample[score]
             )
 
-        # Loop over the EEVs and compute the ROCE for the bootstrap sample
-        for j, eev in enumerate(eevs):
-            # Calculate the index corresponding to the EEV
-            index = np.searchsorted(fpr, eev, side="right")
+            # Loop over the EEVs and compute the ROCE for the bootstrap sample
+            for j, eev in enumerate(eevs):
+                if interpolation:
+                    roce_values[j, i] = np.true_divide(np.interp(eev, fpr, tpr), eev)
+                else:
+                    # Calculate the index corresponding to the EEV
+                    index = np.searchsorted(fpr, eev, side="right")
 
-            # Compute the TPR and FPR at the selected index
-            tpr_eev = tpr[index]
-            fpr_eev = fpr[index]
+                    # Compute the TPR and FPR at the selected index
+                    tpr_eev = tpr[index]
+                    fpr_eev = fpr[index]
 
-            # Compute the ROCE at the selected EEV
-            roce = tpr_eev / fpr_eev
-            roce_values[j, i] = roce
+                    # Compute the ROCE at the selected EEV
+                    roce = tpr_eev / fpr_eev
+                    roce_values[j, i] = roce
 
     # Compute the 95% confidence interval and mean for the AUC
     ci_lower = np.nanpercentile(auc_values, 2.5)
