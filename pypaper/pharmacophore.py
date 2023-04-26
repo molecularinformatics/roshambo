@@ -19,11 +19,17 @@ FEATURES = {
 }
 
 
-def calc_pharmacophore(rdkit_mol):
+def calc_pharmacophore(rdkit_mol, fdef_path=None):
+    if not fdef_path:
+        rdkit_path = os.environ.get("RDBASE")
+        if rdkit_path:
+            fdef_path = os.path.join(rdkit_path, "Data/BaseFeatures.fdef")
+        else:
+            logging.error("RDBASE environment variable is not set.")
+            return None
+
     # Build a feature factory using the BaseFeatures.fdef file
-    feature_factory = AllChem.BuildFeatureFactory(
-        RDKIT_PATH + "/Data/BaseFeatures.fdef"
-    )
+    feature_factory = AllChem.BuildFeatureFactory(fdef_path)
 
     # Get a list of molecular features for the molecule using the feature factory
     features = feature_factory.GetFeaturesForMol(rdkit_mol)
@@ -87,16 +93,16 @@ def calc_pharm_overlap(ref_pharm, fit_pharm):
 #     return volume
 
 
-def calc_multi_pharm_overlap(fit_mol, ref_pharm):
-    fit_pharm = calc_pharmacophore(fit_mol.mol)
+def calc_multi_pharm_overlap(fit_mol, ref_pharm, fdef_path):
+    fit_pharm = calc_pharmacophore(fit_mol.mol, fdef_path)
     fit_overlap = calc_pharm_overlap(fit_pharm, fit_pharm)
     ref_fit_overlap = calc_pharm_overlap(ref_pharm, fit_pharm)
     return fit_overlap, ref_fit_overlap
 
 
-def color_tanimoto(ref_mol, fit_mol):
-    ref_pharm = calc_pharmacophore(ref_mol)
-    fit_pharm = calc_pharmacophore(fit_mol)
+def color_tanimoto(ref_mol, fit_mol, fdef_path=None):
+    ref_pharm = calc_pharmacophore(ref_mol, fdef_path)
+    fit_pharm = calc_pharmacophore(fit_mol, fdef_path)
     ref_volume = 0
     fit_volume = 0
     overlap = 0

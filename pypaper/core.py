@@ -110,6 +110,7 @@ class GetSimilarityScores:
         margin=0.4,
         use_carbon_radii=True,
         color=False,
+        fdef_path=None,
         sort_by="ShapeTanimoto",
         write_to_file=False,
         max_conformers=1,
@@ -165,7 +166,11 @@ class GetSimilarityScores:
         if color:
             ref_pharm = calc_pharmacophore(self.ref_mol.mol)
             ref_volume = calc_pharm_overlap(ref_pharm, ref_pharm)
-            inputs = [(fit_mol, ref_pharm) for fit_mol in self.transformed_molecules]
+
+            inputs = [
+                (fit_mol, ref_pharm, fdef_path)
+                for fit_mol in self.transformed_molecules
+            ]
 
             with Pool(processes=cpu_count()) as pool:
                 outputs_pharm = pool.starmap(calc_multi_pharm_overlap, inputs)
