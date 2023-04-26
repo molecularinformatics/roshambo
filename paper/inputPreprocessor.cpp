@@ -21,15 +21,9 @@
 #include <cassert>
 #include <string>
 #include <sstream>
-#include <openbabel/obconversion.h>
-#include <openbabel/mol.h>
-#include <openbabel/obiter.h>
-#include <openbabel/data.h>
 #include <GraphMol/ROMol.h>
 
-
 using namespace std;
-using namespace OpenBabel;
 using namespace RDKit;
 
 list<set<int> > cyclic_decomposition(const molgraph& molecule) {
@@ -115,24 +109,6 @@ list<set<int> > cyclic_decomposition(const molgraph& molecule) {
     return cycle_domain_elements;
 }
 
- list<set<int> > find_ring_systems(OBMol& mol) {
-    molgraph graph;
-    for (OBMolAtomIter a(mol); a; a++) {
-        //cout << "Found atom: "<<a->GetIdx()<<" with atomic num = "<<a->GetAtomicNum()<<" and VdW radius "<<etab.GetVdwRad(a->GetAtomicNum())<<endl;
-        graph.add_vertex(a->GetIdx());
-    }
-    for (OBMolBondIter b(mol); b; b++) {
-        //cout << "Found bond:"<<b->GetBeginAtom()->GetIdx()<<"-"<<b->GetEndAtom()->GetIdx()<<endl;
-        if (b->GetBeginAtom()->GetIdx() > b->GetEndAtom()->GetIdx())
-            continue;
-        //cout << "Adding edge:"<<b->GetBeginAtom()->GetIdx()<<"-"<<b->GetEndAtom()->GetIdx()<<endl;
-        graph.add_edge(b->GetBeginAtom()->GetIdx(),b->GetEndAtom()->GetIdx());
-    }
-    //graph.shrink();
-    //cout << graph.toDOT();
-    return cyclic_decomposition(graph);
-}
-
  list<set<int> > find_ring_systems_rdkit(RDKit::ROMol* rdmol) {
     molgraph graph;
     for (unsigned int i = 0; i < rdmol->getNumAtoms(); ++i) {
@@ -148,20 +124,3 @@ list<set<int> > cyclic_decomposition(const molgraph& molecule) {
     return cyclic_decomposition(graph);
 }
 
-
-static int test_main(int argc,char** argv) {
-    OBConversion conv;
-    OBFormat* inFormat = conv.FormatFromExt(argv[1]);
-    cout << "setinformat: "<< conv.SetInFormat(inFormat)<<endl;
-    OBMol mol;
-    cout << "readfile "<<conv.ReadFile(&mol,argv[1])<<endl;
-    list<set<int> > ringsystems = find_ring_systems(mol);
-    cout << "Found ring systems: "<<endl;
-    for (list<set<int> >::iterator iter = ringsystems.begin(); iter!=ringsystems.end(); iter++) {
-        for (set<int>::iterator it2 = iter->begin();  it2 != iter->end(); it2++) {
-            cout << *it2 << " ";
-        }
-        cout << endl;
-    }
-    return 0;
-}

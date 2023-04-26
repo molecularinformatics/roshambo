@@ -21,16 +21,9 @@
 #include <cassert>
 #include <string>
 #include <sstream>
-#include <openbabel/obconversion.h>
-#include <openbabel/mol.h>
-#include <openbabel/obiter.h>
-#include <openbabel/data.h>
 #include <GraphMol/ROMol.h>
-//#include "/tmp/openbabel-2.0.2/src/formats/mdlformat.cpp"
-
 
 using namespace std;
-using namespace OpenBabel;
 
 /* Defines an undirected graph with integer vertices */ 
 class molgraph {
@@ -106,7 +99,6 @@ class molgraph {
 
 list<set<int> > cyclic_decomposition(const molgraph& molecule);
 
-list<set<int> > find_ring_systems(OBMol& mol);
 list<set<int> > find_ring_systems_rdkit(RDKit::ROMol* rdmol);
 
 #endif
