@@ -103,13 +103,14 @@ def smiles_to_rdmol(
     file_names,
     ignore_hs=True,
     name_prefix="mol",
+    delimiter=" ",
 ):
     rdmols = []
     used_names = {}
     for file_name in file_names:
         if not os.path.isfile(file_name):
             continue
-        supplier = rdmolfiles.SmilesMolSupplier(file_name, titleLine=0)
+        supplier = rdmolfiles.SmilesMolSupplier(file_name, delimiter=delimiter)
         for mol in supplier:
             if not mol:
                 continue
@@ -179,6 +180,7 @@ def prepare_mols(
     opt=False,
     n_confs=10,
     keep_mol=False,
+    delimiter=" ",
     **conf_kwargs,
 ):
     st = time.time()
@@ -191,7 +193,7 @@ def prepare_mols(
     if is_sdf_input:
         rdmols = sdf_to_rdmol(inputs, ignore_hs=ignore_hs)
     else:
-        rdmols = smiles_to_rdmol(inputs, ignore_hs=ignore_hs)
+        rdmols = smiles_to_rdmol(inputs, ignore_hs=ignore_hs, delimiter=delimiter)
 
     input_data = [(rdmol, ignore_hs, n_confs, keep_mol) for rdmol in rdmols]
     kwargs_list = [conf_kwargs] * len(input_data)

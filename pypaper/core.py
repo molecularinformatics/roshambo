@@ -44,6 +44,7 @@ class GetSimilarityScores:
         n_confs=10,
         keep_mol=False,
         working_dir=None,
+        delimiter=" ",
         **conf_kwargs,
     ):
         self.working_dir = working_dir or os.getcwd()
@@ -58,6 +59,7 @@ class GetSimilarityScores:
             ignore_hs=ignore_hs,
             n_confs=0,
             keep_mol=True,
+            delimiter=delimiter
         )
         self.ref_mol = ref_mol[0]
         # TODO:Check if saving all molecules into numpy arrays will cause memory leaks
@@ -67,7 +69,8 @@ class GetSimilarityScores:
             ignore_hs=ignore_hs,
             n_confs=n_confs,
             keep_mol=keep_mol,
-            **conf_kwargs
+            delimiter=delimiter,
+            **conf_kwargs,
         )
 
         self.transformation_arrays = None
