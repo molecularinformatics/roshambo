@@ -14,7 +14,7 @@ def calc_roc_auc(
     n_bootstraps=1000,
     eevs=None,
     plot=True,
-    random_state=1,
+    random_state=None,
 ):
     actives_df = pd.read_csv(actives_file, sep="\t")
     decoys_df = pd.read_csv(decoys_file, sep="\t")
