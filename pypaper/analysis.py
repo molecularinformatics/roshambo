@@ -77,11 +77,13 @@ def calc_roc_auc(
     ci_lower = np.nanpercentile(auc_values, 2.5)
     ci_upper = np.nanpercentile(auc_values, 97.5)
     mean_auc = np.nanmean(auc_values)
+    median_auc = np.nanmedian(auc_values)
 
     # Compute the 95% confidence interval for the ROCE and mean at each EEV
     ci_roce_lower = np.nanpercentile(roce_values, 2.5, axis=1)
     ci_roce_upper = np.nanpercentile(roce_values, 97.5, axis=1)
     roce_mean = np.nanmean(roce_values, axis=1)
+    roce_median = np.nanmedian(roce_values, axis=1)
 
     # Plot the ROC curve
     if plot:
@@ -104,6 +106,7 @@ def calc_roc_auc(
         {
             "Run Name": ["AUC"] + [f"{str(i * 100)}% Enrichment" for i in eevs],
             "Mean": np.insert(roce_mean, 0, mean_auc),
+            "Median": np.insert(roce_median, 0, median_auc),
             "CI_Lower": np.insert(ci_roce_lower, 0, ci_lower),
             "CI_Upper": np.insert(ci_roce_upper, 0, ci_upper),
         }
