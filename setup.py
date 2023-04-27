@@ -128,7 +128,7 @@ with open(os.path.join(module_dir, "requirements.txt")) as f:
     requirements = f.read().splitlines()
 
 setuptools.setup(
-    name="pypaper",
+    name="PyPAPER",
     version="0.0.1",
     author="Rasha Atwi",
     author_email="rasha.atwi@biogen.edu",
