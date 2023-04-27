@@ -17,6 +17,37 @@ def calc_roc_auc(
     random_state=None,
     interpolation=False,
 ):
+    """
+    Calculate the ROC curve and AUC for a set of actives and decoys using bootstrapping
+    and calculate the ROCE at specified enrichment factors (EEVs).
+
+    Args:
+        actives_file (str):
+            Path to a tab-separated file containing the actives data.
+        decoys_file (str):
+            Path to a tab-separated file containing the decoys data.
+        score (str, optional):
+            Name of the score column to use for ranking. Defaults to "ComboTanimoto".
+        n_bootstraps (int, optional):
+            Number of bootstrap samples to use. Defaults to 1000.
+        eevs (list of float, optional):
+            List of EEVs (enrichment factors) at which to compute ROCE. If not
+            specified, default values of 0.005, 0.01, 0.02, and 0.05 are used.
+            Defaults to None.
+        plot (bool, optional):
+            Whether to plot the ROC curve. Defaults to True.
+        random_state (int, optional):
+            Random seed for reproducibility. Defaults to None.
+        interpolation (bool, optional):
+            Whether to use linear interpolation to estimate the TPR at the specified
+            EEV, or to use the TPR and FPR values at the nearest FPR. Defaults to False.
+
+    Returns:
+        tuple:
+            Tuple containing the AUC values and ROCE values for each bootstrap sample.
+    """
+
+    # Load the data
     actives_df = pd.read_csv(actives_file, sep="\t")
     decoys_df = pd.read_csv(decoys_file, sep="\t")
 
@@ -29,10 +60,8 @@ def calc_roc_auc(
     if not eevs:
         eevs = [0.005, 0.01, 0.02, 0.05]
 
-    # Initialize an array to store the bootstrap AUC values
+    # Initialize arrays to store the bootstrap AUC and ROCE values
     auc_values = np.zeros(n_bootstraps)
-
-    # Initialize an array to store the bootstrap ROCE values
     roce_values = np.zeros((len(eevs), n_bootstraps))
 
     # Loop over the bootstrap samples
@@ -41,6 +70,7 @@ def calc_roc_auc(
         bootstrap_sample = combined_df.sample(
             frac=1, replace=True, random_state=random_state
         )
+        # bootstrap_sample.sort_values(score, ascending=False, inplace=True)
         # Check if there are at least two unique labels in the sample
         if len(bootstrap_sample["True Label"].unique()) < 2:
             auc_values[i] = np.nan
@@ -60,9 +90,10 @@ def calc_roc_auc(
             # Loop over the EEVs and compute the ROCE for the bootstrap sample
             for j, eev in enumerate(eevs):
                 if interpolation:
+                    # Compute the interpolated TPR value at the specified EEV
                     roce_values[j, i] = np.true_divide(np.interp(eev, fpr, tpr), eev)
                 else:
-                    # Calculate the index corresponding to the EEV
+                    # Find the index corresponding to the specified FPR (EEV)
                     index = np.searchsorted(fpr, eev, side="right")
 
                     # Compute the TPR and FPR at the selected index
@@ -73,13 +104,13 @@ def calc_roc_auc(
                     roce = tpr_eev / fpr_eev
                     roce_values[j, i] = roce
 
-    # Compute the 95% confidence interval and mean for the AUC
+    # Compute the 95% confidence interval, mean, and median for the AUC
     ci_lower = np.nanpercentile(auc_values, 2.5)
     ci_upper = np.nanpercentile(auc_values, 97.5)
     mean_auc = np.nanmean(auc_values)
     median_auc = np.nanmedian(auc_values)
 
-    # Compute the 95% confidence interval for the ROCE and mean at each EEV
+    # Compute the 95% confidence interval for the ROCE, mean, and median at each EEV
     ci_roce_lower = np.nanpercentile(roce_values, 2.5, axis=1)
     ci_roce_upper = np.nanpercentile(roce_values, 97.5, axis=1)
     roce_mean = np.nanmean(roce_values, axis=1)
@@ -114,7 +145,7 @@ def calc_roc_auc(
     df = df.round(2)
     df.to_csv("analysis.csv", sep="\t", index=False)
 
-    # Compute FPR and TPR from full data
+    # Compute FPR and TPR from full data and save to a file
     fpr, tpr, thresholds = roc_curve(combined_df["True Label"], combined_df[score])
     df_rates = pd.DataFrame({"FPR": fpr, "TPR": tpr})
     df_rates.to_csv("roc.csv", sep="\t", index=False)
@@ -129,6 +160,36 @@ def plot_mult_roc(
     figsize=(6, 5),
     filename="roc_comparison.jpg",
 ):
+    """Plots multiple ROC curves on the same figure.
+
+    Args:
+        rates_dict (Dict[str, str]):
+            Dictionary where keys are the names of the datasets and
+            values are the filenames of the corresponding ROC curve data
+            in tab-separated format.
+        analysis_dict (Dict[str, str]):
+            Dictionary where keys are the names of the datasets and
+            values are the filenames of the corresponding analysis data
+            in tab-separated format.
+        colors_dict (Optional[Dict[str, str]]):
+            Dictionary where keys are the names of the datasets and
+            values are the corresponding color codes in hex format.
+            If not provided or if the length of the dictionary is not
+            equal to the length of rates_dict and analysis_dict,
+            random colors will be generated for each dataset.
+        title (Optional[str]):
+            Title of the plot. Default is "ROC".
+        figsize (Optional[Tuple[int, int]]):
+            Size of the plot. Default is (6, 5).
+        filename (Optional[str]):
+            Filename to save the plot. Default is "roc_comparison.jpg".
+
+    Raises:
+        ValueError:
+            If the lengths of rates_dict and analysis_dict are not equal,
+            or if either dictionary has less than 2 items.
+    """
+
     # Checkpoint 1: Check if the lengths of rates_dict and analysis_dict are equal
     # and greater than or equal to 2
     if (
@@ -186,6 +247,36 @@ def plot_mult_auc(
     group_labels=None,
     figsize=(8, 6),
 ):
+    """Plots the mean AUC with 95% confidence interval for multiple datasets.
+
+    Args:
+        auc_dict (Dict[str, List[str]]):
+            A dictionary where the keys are the names of the datasets
+            and the values are lists of filepaths to the AUC analysis files.
+            Each file should be a tab-separated file with columns "Run Name",
+            "Mean", "Median", "CI_Lower", and "CI_Upper".
+        colors_dict (Optional[Dict[str, str]]):
+            A dictionary where the keys are the names of the datasets
+            and the values are colors in hex format. If not provided, random
+            colors will be generated.
+        title (str):
+            The title of the plot. Default is "Mean AUC with 95% confidence interval".
+        group_labels (Optional[List[str]]):
+            A list of labels for each group of datasets. If not provided,
+            "Data 1", "Data 2", etc. will be used.
+        figsize (Tuple[int, int]):
+            The size of the figure in inches. Default is (8, 6).
+
+    Raises:
+        ValueError:
+            If all values in auc_dict do not have the same length, or if
+            group_labels is provided but does not have the same length as the
+            number of groups.
+
+    Returns:
+        None
+    """
+
     # Checkpoint 1: Check if all values in auc_dict have the same length
     lengths = set(len(v) for v in auc_dict.values())
     if len(lengths) != 1:
