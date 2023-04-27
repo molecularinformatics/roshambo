@@ -363,6 +363,38 @@ def plot_mult_enrichment(
     hatch_patterns=None,
     figsize=(8, 6),
 ):
+    """
+    Plots a stacked bar chart of enrichment factors for multiple datasets.
+
+    Args:
+        enrich_dict (Dict[str, List[str]]):
+            A dictionary of file paths for the enrichment analysis output
+            files, keyed by the dataset name. Each value in the dictionary
+            should be a list of file paths corresponding to the different
+            enrichment analyses run on that dataset.
+        colors_dict (Optional[Dict[int, str]]):
+            A dictionary of color strings keyed by integer values, used to
+            color the different enrichment factor components. If not provided,
+            a default color map is used.
+        title (Optional[str]):
+            The title of the plot. Default is "Enrichment factors with percentage cutoffs".
+        group_labels (Optional[List[str]]):
+            A list of labels for each group in the stacked bars.
+        hatch_patterns (Optional[List[str]]):
+            A list of hatch patterns to use for each dataset in the stacked
+            bars.
+        figsize (Optional[Tuple[int, int]]):
+            The size of the figure in inches. Default is (8, 6).
+
+    Raises:
+        ValueError:
+            If the number of files in any value of enrich_dict is not the
+            same as the number of files in any other value of enrich_dict.
+
+    Returns:
+        None.
+    """
+
     num_datasets = len(enrich_dict.keys())
     num_groups = len(next(iter(enrich_dict.values())))
 
