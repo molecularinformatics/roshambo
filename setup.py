@@ -7,6 +7,9 @@ from distutils.extension import Extension
 module_dir = os.path.dirname(os.path.abspath(__file__))
 
 RDBASE = os.environ.get("RDBASE")
+if not RDBASE:
+    raise Exception("RDBASE environment variable not set.")
+
 RDKIT_INCLUDE_DIR = os.path.join(RDBASE, "Code")
 RDKIT_LIB_DIR = os.path.join(RDBASE, "lib")
 MyRDKit_FIND_COMPONENTS = ["GraphMol", "SmilesParse", "FileParsers", "Depictor"]
@@ -18,10 +21,10 @@ for component in MyRDKit_FIND_COMPONENTS:
         raise Exception(f"Didn't find RDKit {component} library.")
     RDKIT_LIBRARIES.append(library_path)
 
-PAPER_DIR = "/UserUCDD/ratwi/pypaper/paper/"
+PAPER_DIR = os.path.join(module_dir, "paper")
 CCFLAGS = [
     "-O2",
-    "-I" + RDKIT_INCLUDE_DIR,
+    f"-I{RDKIT_INCLUDE_DIR}",
     "-DORIG_GLOBAL",
     "-DFAST_OVERLAP",
     "-DNO_DIV_ADDRESS",
@@ -29,12 +32,14 @@ CCFLAGS = [
 ]
 PTXFLAGS = ["-Xcompiler", "-O2", "-arch", "sm_50", "-Xptxas", "-v"]
 LDFLAGS = [
-    "-L" + RDKIT_LIB_DIR,
+    f"-L{RDKIT_LIB_DIR}",
 ]
 
 
 def locate_cuda():
-    home = "/usr/local/cuda-11/"
+    home = os.environ.get("CUDA_HOME")
+    if not home:
+        raise Exception("CUDA_HOME environment variable not set.")
     nvcc = os.path.join(home, "bin", "nvcc")
     cudaconfig = {
         "home": home,
@@ -59,10 +64,10 @@ def customize_compiler_for_nvcc(self):
         if os.path.splitext(src)[1] == ".cu":
             self.set_executable("compiler_so", CUDA["nvcc"])
             postargs = extra_postargs["nvcc"]
-        elif src == module_dir + "/pypaper/cpaper.cpp":
+        elif src == os.path.join(module_dir, "pypaper", "cpaper.cpp"):
             self.set_executable("compiler_so", CUDA["nvcc"])
             postargs = [
-                "-I" + RDKIT_INCLUDE_DIR,
+                f"-I{RDKIT_INCLUDE_DIR}",
                 "-x",
                 "cu",
                 "-std=c++11",
@@ -93,14 +98,14 @@ CUDA = locate_cuda()
 ext = Extension(
     name="cpaper",
     sources=[
-        module_dir + "/pypaper/cpaper.pyx",
-        PAPER_DIR + "deviceAnalyticVolume.cu",
-        PAPER_DIR + "hostAnalyticVolume.cu",
-        PAPER_DIR + "deviceOverlay.cu",
-        PAPER_DIR + "transformTools.cu",
-        PAPER_DIR + "inputFileReader.cpp",
-        PAPER_DIR + "inputPreprocessor.cpp",
-        PAPER_DIR + "inputModule.cu",
+        os.path.join(module_dir, "pypaper", "cpaper.pyx"),
+        os.path.join(PAPER_DIR, "deviceAnalyticVolume.cu"),
+        os.path.join(PAPER_DIR, "hostAnalyticVolume.cu"),
+        os.path.join(PAPER_DIR, "deviceOverlay.cu"),
+        os.path.join(PAPER_DIR, "transformTools.cu"),
+        os.path.join(PAPER_DIR, "inputFileReader.cpp"),
+        os.path.join(PAPER_DIR, "inputPreprocessor.cpp"),
+        os.path.join(PAPER_DIR, "inputModule.cu"),
     ],
     include_dirs=[CUDA["include"], PAPER_DIR, RDKIT_INCLUDE_DIR],
     library_dirs=[CUDA["lib64"], PAPER_DIR, RDKIT_LIB_DIR],
@@ -118,6 +123,10 @@ ext = Extension(
     extra_objects=RDKIT_LIBRARIES,
 )
 
+# Load requirements.txt
+with open(os.path.join(module_dir, "requirements.txt")) as f:
+    requirements = f.read().splitlines()
+
 setuptools.setup(
     name="pypaper",
     version="0.0.1",
@@ -126,8 +135,9 @@ setuptools.setup(
     description="pypaper contains is a python package for robust Gaussian molecular "
     "shape comparison",
     long_description=open(os.path.join(module_dir, "README.md")).read(),
+    long_description_content_type="text/markdown",
     url="https://github.com/rashatwi/pypaper",
-    install_requires=["numpy", "pandas", "cython"],
+    install_requires=requirements,
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -137,7 +147,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering",
     ],
-    python_requires=">=3.5",
+    python_requires=">=3.7",
     package_data={},
     ext_modules=[ext],
     cmdclass={"build_ext": CustomBuildExt},
