@@ -151,7 +151,7 @@ class Molecule:
         n_confs=10,
         random_seed=999,
         method="ETKDGv2",
-        ff="UFF",
+        ff="MMFF94s",
         add_hs=True,
         opt_confs=False,
         calc_energy=False,
