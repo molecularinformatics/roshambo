@@ -14,11 +14,39 @@ from rdkit.Chem import rdDistGeom
 
 
 class Molecule:
+    """A class representing a molecule.
+
+    Attributes:
+        mol (rdkit.Chem.rdchem.Mol):
+            An RDKit Mol object representing the molecule.
+        name (str):
+            The name of the molecule, as specified by the '_Name' property in
+            the mol object.
+
+    Args:
+        rdkit_mol (rdkit.Chem.rdchem.Mol):
+            An RDKit Mol object representing the molecule.
+    """
+
     def __init__(self, rdkit_mol):
         self.mol = rdkit_mol
         self.name = self.mol.GetProp("_Name")
 
     def get_atomic_coordinates_and_radii(self, use_carbon_radii=False):
+        """Return atomic coordinates and radii for all atoms in the molecule.
+
+        Args:
+            use_carbon_radii (bool, optional):
+                Whether to use the van der Waals radius of carbon for all atoms.
+                Defaults to False.
+
+        Returns:
+            np.ndarray:
+                A numpy array with shape (n_atoms, 4) containing the atomic
+                coordinates and radii, where n_atoms is the number of atoms in
+                the molecule.
+        """
+        # Get a list of atoms in the molecule
         atoms = self.mol.GetAtoms()
         coordinates_and_radii = []
         conf = self.mol.GetConformer()
@@ -26,27 +54,84 @@ class Molecule:
         for i, j in enumerate(atoms):
             pos = conf.GetAtomPosition(i)
             if use_carbon_radii:
+                # If use_carbon_radii is True, use a fixed radius of 1.7 Å for all atoms
                 radius = periodic_table.GetRvdw(6)
             else:
+                # If use_carbon_radii is False, use the van der Waals radius for
+                # the atomic number
                 radius = periodic_table.GetRvdw(j.GetAtomicNum())
             coordinates_and_radii.append((pos.x, pos.y, pos.z, radius))
         return np.array(coordinates_and_radii)
 
     def transform_mol(self, rot, trans):
+        """
+        Transforms the atomic coordinates of the molecule by rotating and
+        translating the molecule.
+
+        Args:
+            rot (np.ndarray): A 4D array representing the rotation matrix.
+            trans (np.ndarray): A 1D array representing the translation vector.
+
+        Returns:
+            np.ndarray: A 2D array representing the transformed atomic coordinates
+            and radii of the molecule.
+        """
+        # Get the atomic coordinates of the molecule without the radii
         xyz = self.get_atomic_coordinates_and_radii()[:, :3]
+        # Create a rotation object from the rotation matrix
         r = R.from_quat(rot)
+        # Apply the rotation to the atomic coordinates and add the translation vector
         xyz_trans = r.apply(xyz) + trans
         return xyz_trans
 
     def project_mol(self):
+        """
+        Project the atomic coordinates of a molecule onto a plane defined by the
+        principal axes.
+
+        This method computes the Singular Value Decomposition (SVD) of the atomic
+        coordinates to obtain the principal axes, ensuring that the determinant of the
+        transformation matrix is positive. It then projects the atomic coordinates onto
+        the plane defined by these axes, and creates a new molecule object with the
+        projected coordinates.
+
+        Note that this function modifies the molecule object in place.
+
+        Returns:
+            None
+        """
+        # Get the atomic coordinates of the molecule without the radii
         xyz = self.get_atomic_coordinates_and_radii()[:, :3]
+
+        # Perform SVD to obtain the principal components of the molecule's
+        # atomic coordinates
         u, s, vh = np.linalg.svd(xyz)
+
+        # Check the determinant of the rotation matrix and correct it if necessary
         if np.linalg.det(vh) < 0:
             vh = -vh
+
+        # Rotate the molecule to align the second and third principal components
+        # with the y- and z-axes, respectively
         new_xyz = np.dot(xyz, vh.T)
+
+        # Create a new molecule object using the new coordinates
         self.create_molecule(new_xyz)
 
     def center_mol(self):
+        """
+        Center the molecule at the origin of the coordinate system.
+
+        The function calculates the centroid of the molecule's atomic coordinates,
+        and translates the molecule so that the centroid coincides with the origin
+        (0, 0, 0) of the coordinate system.
+
+        Note that this function modifies the molecule object in place.
+
+        Returns:
+            None
+        """
+        # Calculate the centroid of the molecule's atomic coordinates
         centroid = np.zeros((1, 3))
         count = 0
         xyz = self.get_atomic_coordinates_and_radii()[:, :3]
@@ -54,7 +139,11 @@ class Molecule:
             centroid = centroid + atom
             count += 1
         centroid = centroid / count
+
+        # Translate the molecule by subtracting the centroid
         new_xyz = xyz - centroid
+
+        # Create a new molecule object using the new coordinates
         self.create_molecule(new_xyz)
 
     def generate_conformers(
@@ -73,7 +162,58 @@ class Molecule:
         num_threads=1,
         rdkit_args=None,
     ):
+        """Generates conformers for a molecule and optionally optimizes or aligns them.
 
+        Args:
+            n_confs (int):
+                The number of conformers to generate. Defaults to 10.
+            random_seed (int):
+                The seed for the random number generator used in conformer generation.
+                Defaults to 999.
+            method (str):
+                The method for embedding conformers, one of "ETDG", "ETKDG", or
+                "ETKDGv2". Defaults to "ETKDGv2".
+            ff (str):
+                The force field to use for conformer optimization, one of "UFF",
+                "MMFF94s", or "MMFF94s_noEstat". Defaults to "MMFF94s".
+            add_hs (bool):
+                Whether to add hydrogens to the molecule before conformer generation.
+                Defaults to True.
+            opt_confs (bool):
+                Whether to optimize the generated conformers using the specified force
+                field.Defaults to False.
+            calc_energy (bool):
+                Whether to calculate the energy of the conformers without optimization.
+                Defaults to False.
+            energy_iters (int):
+                The maximum number of iterations to use in energy minimization.
+                Defaults to 200.
+            energy_cutoff (float):
+                The maximum energy difference (in kcal/mol) to keep a conformer after
+                energy minimization. Energy difference is calculated between the lowest
+                energy conformer and the current one. Defaults to np.inf, meaning that
+                all conformers are kept.
+            align_confs (bool):
+                Whether to align the conformers to each other using the first conformer
+                as a reference.
+            rms_cutoff (float):
+                The RMSD cutoff (in Angstroms) for clustering conformers based on
+                similarity. Only the conformer corresponding to the centroid of each
+                cluster is returned.
+            num_threads (int):
+                The number of threads to use in conformer generation and optimization.
+            rdkit_args (dict):
+                Additional arguments to pass to RDKit for conformer generation
+                (rdkit.Chem.rdDistGeom.EmbedMultipleConfs)
+
+        Raises:
+            AssertionError:
+                If the specified embedding method or ff is not supported.
+
+        Returns:
+            None:
+                The function only modifies the molecule object in place.
+        """
         assert method in [
             "ETDG",
             "ETKDG",
@@ -176,6 +316,21 @@ class Molecule:
 
     @staticmethod
     def _get_conf_ff(mol, ff, conf_id=-1):
+        """Returns a force field object for a specified conformer of a molecule.
+
+        Args:
+            mol (rdkit.Chem.rdchem.Mol): RDKit Mol object representing the molecule.
+            ff (str): The name of the force field to use. Supported options are "UFF",
+                "MMFF94s", and "MMFF94s_noEstat".
+            conf_id (int): The ID of the conformer for which to generate the force field.
+                Defaults to -1, indicating the first conformer in the molecule.
+
+        Returns:
+            rdkit.ForceField.rdForceField.ForceField: The force field object.
+
+        Raises:
+            AssertionError: If an unsupported force field name is provided.
+        """
         assert ff in [
             "UFF",
             "MMFF94s",
@@ -188,15 +343,29 @@ class Molecule:
                 mol, mmffVariant="MMFF94s"
             )
             if ff == "MMFF94s_noEstat":
+                # Turn off the electrostatic term if using MMFF94s_noEstat
                 py_mmff.SetMMFFEleTerm(False)
             return rdForceFieldHelpers.MMFFGetMoleculeForceField(
                 mol, pyMMFFMolProperties=py_mmff, confId=conf_id
             )
 
     def process_confs(self, ff, ignore_hs):
+        """Process conformers of a molecule object.
+
+        Args:
+            ff (str):
+                The force field used to optimize conformers.
+            ignore_hs (bool):
+                Whether to remove hydrogen atoms from the generated conformers.
+
+        Returns:
+            List[Molecule]:
+                A list of Molecule objects for each conformer of the input molecule.
+        """
         conformers = []
         mol_copy = copy.deepcopy(self.mol)
         for i, conf in enumerate(mol_copy.GetConformers()):
+            # Get conformer name by appending its index to the original mol name
             conformer_name = f"{self.mol_name()}_{i}"
             conformer_mol = Chem.Mol(mol_copy)
             conformer_mol.RemoveAllConformers()
@@ -207,30 +376,75 @@ class Molecule:
                 conformer_mol.SetDoubleProp(prop_name, prop_val)
             if ignore_hs:
                 conformer_mol = AllChem.RemoveHs(conformer_mol)
+
+            # For each conformer, set its name and create a new Molecule object
             conformer_mol.SetProp("_Name", conformer_name)
             conformer = Molecule(conformer_mol)
+
+            # Center and project the conformer
             conformer.center_mol()
             conformer.project_mol()
             conformers.append(conformer)
         return conformers
 
     def mol_name(self):
+        """Get the name of the molecule.
+
+        Returns:
+            str:
+                The name of the molecule, as specified by the '_Name' property
+                in the mol object.
+        """
         return self.mol.GetProp("_Name")
 
     def to_binary(self):
+        """Convert the molecule to a binary representation.
+
+        Returns:
+            bytes:
+                The binary representation of the molecule.
+        """
         return self.mol.ToBinary()
 
     def create_molecule(self, coords):
+        """
+        Creates a new RDKit Mol object with the provided atomic coordinates
+        and updates the current Molecule object with the new Mol.
+
+        Args:
+            coords (numpy.ndarray):
+                A numpy array of atomic coordinates with shape (n, 3), where n is
+                the number of atoms in the molecule.
+
+        Returns:
+            None
+        """
+        # Get the current conformer and update its atom positions with the
+        # provided coords
         conf = self.mol.GetConformer()
         for i in range(self.mol.GetNumAtoms()):
             x, y, z = coords[i]
             conf.SetAtomPosition(i, Point3D(x, y, z))
+
+        # Create a new Mol object with the updated conformer
         new_mol = Chem.Mol(self.mol)
         new_mol.RemoveAllConformers()
         new_mol.AddConformer(Chem.Conformer(conf))
+
         self.mol = new_mol
 
     def write_molfile(self, output_file):
+        """Write the molecule to a file in PDB or SDF format.
+
+        Args:
+            output_file (str):
+                The path to the output file. The file format is inferred from the
+                file extension.
+
+        Raises:
+            ValueError:
+                If the file format is not valid.
+        """
         if ".pdbqt" in output_file:
             writer = Chem.PDBWriter(output_file)
             writer.write(self.mol)
