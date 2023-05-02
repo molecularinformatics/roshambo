@@ -245,6 +245,7 @@ class Molecule:
             assert ff in [
                 "UFF",
                 "MMFF94s",
+                "MMFF94s_noEstat",
             ], f"{ff} not supported for optimizing conformers"
             results = None
             if ff == "UFF":
