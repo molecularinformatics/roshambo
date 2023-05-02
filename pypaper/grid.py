@@ -79,8 +79,6 @@ class Grid:
         """
         grid_coords = np.array(coords) + 0.5
         real_coords = lb + grid_coords * self.res
-        print(type(real_coords))
-        print(real_coords)
         return real_coords
 
     def create_grid(self):
