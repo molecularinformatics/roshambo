@@ -1,17 +1,14 @@
 import numpy as np
 
+from pypaper import constants
 from pypaper.grid import Grid
-
-KAPPA = 2.41798793102
-PI = 3.14159265358
-RT22 = 2.82842712475
 
 
 def rho(atoms, gcs):
-    alphas = -KAPPA / (atoms[:, 0, 3] ** 2)
+    alphas = -constants.KAPPA / (atoms[:, 0, 3] ** 2)
     diffs = gcs[:, np.newaxis, :] - atoms[:, 0, :3]
     r2s = np.sum(diffs * diffs, axis=-1)
-    rhos = RT22 * np.exp(alphas[np.newaxis, :] * r2s)
+    rhos = constants.CONSTANT_P * np.exp(alphas[np.newaxis, :] * r2s)
     return rhos
 
 
@@ -29,16 +26,19 @@ def calc_gaussian_overlap_vol(ref_mol, fit_mol, grid, use_carbon_radii):
     return volume
 
 
-def calc_multi_gaussian_overlap_vol(fit_mol, res, margin, ref_grid, ref_mol, use_carbon_radii):
+def calc_multi_gaussian_overlap_vol(
+    fit_mol, res, margin, ref_grid, ref_mol, use_carbon_radii
+):
     fit_grid = Grid(fit_mol, res=res, margin=margin, use_carbon_radii=use_carbon_radii)
     fit_grid.create_grid()
-    fit_overlap = calc_gaussian_overlap_vol(fit_mol, fit_mol, fit_grid, use_carbon_radii)
+    fit_overlap = calc_gaussian_overlap_vol(
+        fit_mol, fit_mol, fit_grid, use_carbon_radii
+    )
 
     ref_fit_overlap = calc_gaussian_overlap_vol(
         ref_mol,
         fit_mol,
         ref_grid if np.prod(ref_grid.extent) < np.prod(fit_grid.extent) else fit_grid,
-        use_carbon_radii
+        use_carbon_radii,
     )
     return fit_overlap, ref_fit_overlap
-
