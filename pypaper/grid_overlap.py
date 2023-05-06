@@ -22,13 +22,13 @@ def rho(atoms, gcs):
             The values of the Gaussian density function.
     """
 
-    # calculate the alpha values using the atomic radii
+    # Calculate the alpha values using the atomic radii
     alphas = -constants.KAPPA / (atoms[:, 0, 3] ** 2)
-    # calculate the differences between the grid points and the atom coordinates
+    # Calculate the differences between the grid points and the atom coordinates
     diffs = gcs[:, np.newaxis, :] - atoms[:, 0, :3]
-    # calculate the r^2 values
+    # Calculate the r^2 values
     r2s = np.sum(diffs * diffs, axis=-1)
-    # calculate the rhos values
+    # Calculate the rhos values
     rhos = constants.CONSTANT_P * np.exp(alphas[np.newaxis, :] * r2s)
     return rhos
 
