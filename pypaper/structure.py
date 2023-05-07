@@ -320,17 +320,22 @@ class Molecule:
         """Returns a force field object for a specified conformer of a molecule.
 
         Args:
-            mol (rdkit.Chem.rdchem.Mol): RDKit Mol object representing the molecule.
-            ff (str): The name of the force field to use. Supported options are "UFF",
+            mol (rdkit.Chem.rdchem.Mol):
+                RDKit Mol object representing the molecule.
+            ff (str):
+                The name of the force field to use. Supported options are "UFF",
                 "MMFF94s", and "MMFF94s_noEstat".
-            conf_id (int): The ID of the conformer for which to generate the force field.
+            conf_id (int):
+                The ID of the conformer for which to generate the force field.
                 Defaults to -1, indicating the first conformer in the molecule.
 
         Returns:
-            rdkit.ForceField.rdForceField.ForceField: The force field object.
+            rdkit.ForceField.rdForceField.ForceField:
+                The force field object.
 
         Raises:
-            AssertionError: If an unsupported force field name is provided.
+            AssertionError:
+                If an unsupported force field name is provided.
         """
         assert ff in [
             "UFF",
