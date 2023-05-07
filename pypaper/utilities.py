@@ -334,10 +334,9 @@ def prepare_mols(
 ):
     """
     Takes a list of input files (.sdf or .smi), converts them to centered and projected
-    Molecule objects onto a plane, optionally generates conformers, project the
-    molecule onto a plane. The resulting processed Molecule objects are written to a
-    SDF file called mols.sdf. The function returns a list of the processed Molecule
-    objects and a list of the names of the molecules.
+    Molecule objects, and optionally generates conformers. The resulting processed
+    Molecule objects are written to a SDF file called mols.sdf. The function returns
+    a list of the processed Molecule objects and a list of the names of the molecules.
 
     Args:
         inputs (list):
@@ -370,7 +369,6 @@ def prepare_mols(
     mol_names = []
 
     # Check if input file is SDF or SMILES
-
     is_sdf_input = any(
         os.path.isfile(input_str) and input_str.endswith(".sdf") for input_str in inputs
     )
