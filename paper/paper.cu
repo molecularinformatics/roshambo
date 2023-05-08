@@ -46,7 +46,7 @@ extern "C" float** paper(int gpuID, list<RDKit::ROMol*>& molecules) {
     num_mols = molecules.size();
 
     cudaSetDevice(gpuID);
-    fprintf(stderr,"# Executing on GPU %d\n",gpuID);
+    fprintf(stderr,"# Executing PAPER on GPU %d\n",gpuID);
 
     // Load reference and fit molecules from disk into CUDAmols and dCUDAMultimols {{{
     CUDAmol refmol;
@@ -97,7 +97,7 @@ extern "C" float** paper(int gpuID, list<RDKit::ROMol*>& molecules) {
     double optstart = getustime();
     const int itercount = optimize_sepkernels(devFitMM,devRefMM,hostDeviceOverlaps,hostTimings,numTimers,com_ref,com_fit);
     double optend = getustime();
-    fprintf(stderr,"# Optimization used %d iterations of BFGS\n",itercount);
+    fprintf(stderr,"# Shape overlay optimization used %d iterations of BFGS\n",itercount);
 
     // Get the transforms back
     cudaMemcpy(hostDeviceTransforms,devFitMM.transforms,nfitmols*transform_pitch*sizeof(float),cudaMemcpyDeviceToHost);
