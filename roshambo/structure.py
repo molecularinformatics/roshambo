@@ -220,7 +220,7 @@ class Molecule:
             "ETDG",
             "ETKDG",
             "ETKDGv2",
-            #"ETKDGv3",
+            # "ETKDGv3",
         ], f"{method} not supported for generating conformers"
 
         # Define parameters for embedding conformers
@@ -378,10 +378,11 @@ class Molecule:
             conformer_mol = Chem.Mol(mol_copy)
             conformer_mol.RemoveAllConformers()
             conformer_mol.AddConformer(Chem.Conformer(conf))
-            for prop in ["energy", "delta_energy"]:
-                prop_name = f"rdkit_{ff}_{prop}"
-                prop_val = conf.GetDoubleProp(prop_name)
-                conformer_mol.SetDoubleProp(prop_name, prop_val)
+            # for prop in ["energy", "delta_energy"]:
+            #     prop_name = f"rdkit_{ff}_{prop}"
+            #     prop_val = conf.GetDoubleProp(prop_name)
+            #     conformer_mol.SetDoubleProp(prop_name, prop_val)
+
             if ignore_hs:
                 conformer_mol = AllChem.RemoveHs(conformer_mol)
 
