@@ -1,5 +1,7 @@
 import copy
 import logging
+import hashlib
+
 import numpy as np
 
 from scipy.spatial.transform import Rotation as R
@@ -438,6 +440,14 @@ class Molecule:
         new_mol.AddConformer(Chem.Conformer(conf))
 
         self.mol = new_mol
+
+    def get_inchikey(self):
+        inchi_key = Chem.MolToInchiKey(
+            self.mol, options="/FixedH /SUU /RecMet /KET /15T"
+        )
+        if inchi_key is None:
+            return None
+        return hashlib.md5(inchi_key.encode("utf-8")).hexdigest()
 
     def write_molfile(self, output_file):
         """Write the molecule to a file in PDB or SDF format.
