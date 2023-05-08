@@ -28,7 +28,7 @@ CCFLAGS = [
     "-DORIG_GLOBAL",
     "-DFAST_OVERLAP",
     "-DNO_DIV_ADDRESS",
-    "-D_GLIBCXX_USE_CXX11_ABI=0",
+    # "-D_GLIBCXX_USE_CXX11_ABI=0",  # comment
 ]
 PTXFLAGS = ["-Xcompiler", "-O2", "-arch", "sm_50", "-Xptxas", "-v"]
 LDFLAGS = [
@@ -72,9 +72,9 @@ def customize_compiler_for_nvcc(self):
                 f"-I{RDKIT_INCLUDE_DIR}",
                 "-x",
                 "cu",
-                "-std=c++11",
+                "-std=c++17",
                 "-arch=sm_70",
-                "-D_GLIBCXX_USE_CXX11_ABI=0",
+                # "-D_GLIBCXX_USE_CXX11_ABI=0",  # comment
                 "--ptxas-options=-v",
                 "-c",
                 "--compiler-options",
@@ -113,13 +113,13 @@ ext = Extension(
     ],
     include_dirs=[CUDA["include"], PAPER_DIR, RDKIT_INCLUDE_DIR],
     library_dirs=[CUDA["lib64"], PAPER_DIR, RDKIT_LIB_DIR],
-    libraries=["cudart", "RDKitGraphMol"],
+    libraries=["cudart"],
     language="c++",
     runtime_library_dirs=[CUDA["lib64"], PAPER_DIR],
     extra_compile_args={
-        "gcc": CCFLAGS + ["-DGPP"] + ["-std=c++11"],
+        "gcc": CCFLAGS + ["-DGPP"] + ["-std=c++17"],
         "nvcc": CCFLAGS
-        + ["-std=c++11"]
+        + ["-std=c++17"]
         + PTXFLAGS
         + ["--ptxas-options=-v", "-c", "--compiler-options", "-fPIC"],
     },
