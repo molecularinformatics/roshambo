@@ -162,7 +162,8 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
     ],
     python_requires=">=3.7",
-    package_data={},
+    # include_package_data=True,
+    # package_data={"": ["roshambo/*.cpython*"]},
     ext_modules=[ext],
     cmdclass={"build_ext": CustomBuildExt},
 )
