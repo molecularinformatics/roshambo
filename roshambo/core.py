@@ -1,10 +1,11 @@
 # coding: utf-8
-
+import logging
 
 # Runs PAPER and calculates similarity scores.
 
 import os
 import glob
+import time
 
 import numpy as np
 import pandas as pd
@@ -35,6 +36,67 @@ from roshambo.utilities import prepare_mols
 
 
 class GetSimilarityScores:
+    """
+    Calculates the similarity scores between a reference molecule and a set of
+    molecules in a dataset. Runs PAPER (https://doi.org/10.1002/jcc.21307)
+    in the background to optimize the shape overlap.
+
+    Args:
+        ref_file (str):
+            Name of the reference molecule file.
+        dataset_files_pattern (str):
+            File pattern to match the dataset molecule files.
+        ignore_hs (bool):
+            Whether to ignore hydrogens. Defaults to False.
+        n_confs (int):
+            Number of conformers to generate. Defaults to 10.
+        keep_mol (bool):
+            Whether to keep the original molecule in addition to the conformers.
+            Defaults to False.
+        working_dir (str):
+            Working directory. All output files will be written to this directory.
+            Defaults to the current directory.
+        name_prefix (str):
+            Prefix to use for the molecule names if not found in the input files.
+            Defaults to "mol".
+        smiles_kwargs (dict):
+            Additional keyword arguments to pass to the `smiles_to_rdmol` function.
+        embed_kwargs (dict):
+            Additional keyword arguments to pass to the `smiles_to_rdmol` function.
+        **conf_kwargs (dict):
+            Additional keyword arguments to pass to the `generate_conformers` function.
+
+    Attributes:
+        working_dir (str):
+            Working directory.
+        n_confs (int):
+            Number of conformers to generate.
+        conf_kwargs (dict):
+            Dictionary containing additional keyword arguments to pass to the
+            `generate_conformers` function.
+        ref_file (str):
+            Path to the reference molecule file.
+        dataset_files (list of str):
+            List of dataset molecule files matching the given pattern.
+        ref_mol (Molecule):
+            Reference Molecule object.
+        dataset_mols (list of Molecule):
+            List of Molecule objects in the dataset.
+        dataset_names (list of str):
+            List of molecule names in the dataset.
+        transformation_arrays (list of numpy.ndarray):
+            List of transformation arrays to align the dataset molecules to the
+            reference molecule.
+        rotation (numpy.ndarray):
+            3x3 rotation matrix used to align the dataset molecules to the
+            reference molecule.
+        translation (numpy.ndarray):
+            3D translation vector used to align the dataset molecules to the
+            reference molecule.
+        transformed_molecules (list of Molecule):
+            List of Molecule objects in the dataset aligned to the reference molecule.
+    """
+
     def __init__(
         self,
         ref_file,
@@ -48,6 +110,7 @@ class GetSimilarityScores:
         embed_kwargs=None,
         **conf_kwargs,
     ):
+        # TODO: replace conf_kwargs with conf_dict
         self.working_dir = working_dir or os.getcwd()
         self.n_confs = n_confs
         self.conf_kwargs = conf_kwargs
@@ -82,11 +145,34 @@ class GetSimilarityScores:
         self.transformed_molecules = []
 
     def run_paper(self, gpu_id=0):
+        """
+        Runs the PAPER package to compute the transformation arrays that result in the
+        highest shape overlap between the dataset molecules and the reference molecule.
+        Uses the BFGS optimizer.
+
+        Args:
+            gpu_id (int, optional):
+                ID of the GPU to use. Defaults to 0.
+
+        Returns:
+            None.
+        """
+        st = time.time()
         molecules = [self.ref_mol] + self.dataset_mols
         self.transformation_arrays = cpaper(gpu_id, molecules)
+        et = time.time()
+        print(f"Running paper took: {et -st}")
 
     def convert_transformation_arrays(self):
+        """
+        Converts transformation matrices obtained from PAPER into rotation matrices and
+        translation vectors.
+
+        Returns:
+            None
+        """
         # Extract rotation matrix and translation vector from transformation matrix
+        st = time.time()
         for arr in self.transformation_arrays:
             r = Rotation.from_matrix(arr[:3, :3]).as_quat()
             self.rotation = (
@@ -98,12 +184,28 @@ class GetSimilarityScores:
                 if self.translation.size
                 else t.reshape(1, 3)
             )
+        et = time.time()
+        print(f"Converting transformation arrays took: {et - st}")
 
     def transform_molecules(self):
+        """
+        Transforms the molecules in the dataset using the rotation and translation
+        matrices. The transformed molecules are stored in the `transformed_molecules`
+        attribute.
+
+        Returns:
+            None
+        """
+        st = time.time()
         for mol, rot, trans in zip(self.dataset_mols, self.rotation, self.translation):
+            # Transform the molecule using the rotation and translation matrices
             xyz_trans = mol.transform_mol(rot, trans)
+            # Create a new Molecule object with the transformed coordinates
             mol.create_molecule(xyz_trans)
+            # Append the transformed Molecule object to the list of transformed molecules
             self.transformed_molecules.append(mol)
+        et = time.time()
+        print(f"Transforming molecules took: {et - st}")
 
     def calculate_scores(
         self,
@@ -121,7 +223,68 @@ class GetSimilarityScores:
         max_conformers=1,
         filename="hits.sdf",
     ):
+        """
+        Calculates shape and/or color similarity scores for transformed molecules.
+
+        Args:
+            volume_type (str):
+                The type of overlap volume calculation to use. Options are 'analytic'
+                or 'gaussian'. Defaults to 'analytic'.
+            n (int):
+                The order of the analytic overlap volume calculation. Defaults to 2.
+            proxy_cutoff (float):
+                The distance cutoff to use for the atoms to be considered neighbors
+                and for which overlap volume will be calculated in the analytic
+                volume calculation. If not provided, will compute neighboring atoms based
+                on this codition: |R_i - R_j| <= sigma_i + sigma_j + eps.
+                Defaults to None.
+            epsilon (float):
+                The Gaussian cutoff to use in this condition:
+                |R_i - R_j| <= sigma_i + sigma_j + eps in the analytic volume
+                calculation. R corresponds to the atomic coordinates, sigma is the
+                radius. The larger the epsilon, the greater the number of neighbors
+                each atom will have, so that in the limit of large epsilon, each atom
+                will have all the remaining atoms as neighbors. Defaults to 0.1.
+            res (float):
+                The grid resolution to use for the Gaussian volume calculation.
+                Defaults to 0.4.
+            margin (float):
+                The margin to add to the grid box size for the Gaussian volume
+                calculation. Defaults to 0.4.
+            use_carbon_radii (bool):
+                Whether to use carbon radii for the overlap calculations.
+                Defaults to True.
+            color (bool):
+                Whether to calculate color scores in addition to shape scores.
+                Defaults to False.
+            fdef_path (str):
+                The file path to the feature definition file to use for the pharmacophore
+                calculation. Uses BaseFeatures.fdef if not provided. Defaults to None.
+            sort_by (str):
+                The column to sort the final results by. Defaults to 'ShapeTanimoto'.
+            write_to_file (bool):
+                Whether to write the transformed molecules to a sdf file.
+                Defaults to False.
+            max_conformers (int):
+                The maximum number of conformers to write for each molecule.
+                Defaults to 1, meaning that only the best conformer structure will
+                be written.
+            filename (str):
+                The name of the output file to write. Defaults to 'hits.sdf'.
+
+        Raises:
+            ValueError:
+                If the `volume_type` argument is not 'analytic' or 'gaussian'.
+
+        Returns:
+            pandas.DataFrame:
+                A dataframe containing the similarity scores and overlap volumes for each
+                transformed molecule.
+        """
+
+        st = time.time()
         if volume_type == "analytic":
+            # Calculate reference self shape overlap volume using analytic method
             ref_overlap = calc_analytic_overlap_vol_recursive(
                 self.ref_mol,
                 self.ref_mol,
@@ -130,6 +293,8 @@ class GetSimilarityScores:
                 epsilon=epsilon,
                 use_carbon_radii=use_carbon_radii,
             )
+            # Calculate fit self shape overlap volume and shape overlap volume between
+            # reference and fit molecule using analytic method
             inputs = [
                 (self.ref_mol, fit_mol, n, proxy_cutoff, epsilon, use_carbon_radii)
                 for fit_mol in self.transformed_molecules
@@ -139,8 +304,9 @@ class GetSimilarityScores:
                 shape_outputs = pool.starmap(
                     calc_multi_analytic_overlap_vol_recursive, inputs
                 )
-
         elif volume_type == "gaussian":
+            # Create grid and calculate reference self shape overlap volume using
+            # gaussian method
             ref_grid = Grid(
                 self.ref_mol, res=res, margin=margin, use_carbon_radii=use_carbon_radii
             )
@@ -148,6 +314,9 @@ class GetSimilarityScores:
             ref_overlap = calc_gaussian_overlap_vol(
                 self.ref_mol, self.ref_mol, ref_grid, use_carbon_radii
             )
+
+            # Calculate fit self shape overlap volume and shape overlap volume between
+            # reference and fit molecule using gaussian method
             inputs = [
                 (fit_mol, res, margin, ref_grid, self.ref_mol, use_carbon_radii)
                 for fit_mol in self.transformed_molecules
@@ -161,17 +330,25 @@ class GetSimilarityScores:
                 "Invalid volume_type argument. Must be 'analytic' or 'gaussian'."
             )
 
+        # Calculate shape tanimoto and tversky scores
         (
             shape_tanimoto,
             shape_fit_tversky,
             shape_ref_tversky,
             full_ref_fit_overlap,
         ) = scores(shape_outputs, ref_overlap)
+        et = time.time()
+        print(f"Calculating shape scores took: {et - st}")
 
+        # Calculate color scores if color flag is set to True
         if color:
-            ref_pharm = calc_pharmacophore(self.ref_mol.mol)
+            st = time.time()
+            # Calculate the pharmacophore features of the reference molecule and its
+            # self-overlap volume for color scoring
+            ref_pharm = calc_pharmacophore(self.ref_mol.mol, fdef_path)
             ref_volume = calc_pharm_overlap(ref_pharm, ref_pharm)
-
+            # Calculate fit self color overlap volume and color overlap volume between
+            # reference and fit molecule
             inputs = [
                 (fit_mol, ref_pharm, fdef_path)
                 for fit_mol in self.transformed_molecules
@@ -179,14 +356,20 @@ class GetSimilarityScores:
 
             with Pool(processes=cpu_count()) as pool:
                 outputs_pharm = pool.starmap(calc_multi_pharm_overlap, inputs)
+
+            # Calculate color tanimoto and tversky scores
             color_tanimoto, color_fit_tversky, color_ref_tversky, _ = scores(
                 outputs_pharm, ref_volume
             )
+            et = time.time()
+            print(f"Calculating color scores took: {et - st}")
         else:
             color_tanimoto, color_fit_tversky, color_ref_tversky = [
                 np.zeros(len(self.transformed_molecules))
             ] * 3
 
+        st = time.time()
+        # Prepare the final df data
         df_data = {
             "Molecule": self.dataset_names,
             "ComboTanimoto": shape_tanimoto + color_tanimoto,
@@ -200,12 +383,19 @@ class GetSimilarityScores:
             "RefColorTversky": color_ref_tversky,
             "Overlap": full_ref_fit_overlap,
         }
-
+        # Create the final df with the scores and molecule names
         df = pd.DataFrame(df_data)
+        # TODO: fix this by generating unique id to each molecule using
+        #  non-standard inchis (requires newer rdkit version)
+        max_underscores = df["Molecule"].apply(lambda x: x.count("_")).max()
 
         def _split_at_last_underscore(name):
-            parts = name.rsplit("_", 1)
-            return parts[0]
+            underscore_count = name.count("_")
+            if underscore_count == max_underscores:
+                parts = name.rsplit("_", 1)
+                return parts[0]
+            else:
+                return name
 
         df["Prefix"] = df["Molecule"].apply(_split_at_last_underscore)
         df = df.sort_values(by=["Prefix", sort_by], ascending=[True, False])
@@ -217,22 +407,33 @@ class GetSimilarityScores:
         df = df.loc[idx].sort_values(by=sort_by, ascending=False).round(3)
         del df["Prefix"]
         df.to_csv(f"{self.working_dir}/pypaper.csv", index=False, sep="\t")
+        et = time.time()
+        print(f"Creating dataframe took: {et - st}")
 
+        st = time.time()
         mol_dict = {
             _mol.mol.GetProp("_Name"): _mol for _mol in self.transformed_molecules
         }
+        # Creates a list of molecule objects sorted according to the order of
+        # 'Molecule' column in df dataframe
         reordered_mol_list = [
             mol_dict[name] for name in df["Molecule"] if name in mol_dict
         ]
 
+        # If write_to_file is True, writes the molecule data to an SDF file with the
+        # specified filename
         if write_to_file:
             sd_writer = AllChem.SDWriter(f"{self.working_dir}/{filename}")
             df_columns = df.columns
             df = df.set_index("Molecule")
+            # Loops over each molecule object in the reordered_mol_list and writes it
+            # to the SDF file
             for mol in [self.ref_mol] + reordered_mol_list:
                 if self.n_confs:
                     ff = self.conf_kwargs.get("ff", "UFF")
                     try:
+                        # Sets the 'rdkit_ff_energy' and 'rdkit_ff_delta_energy'
+                        # properties of the molecule, if conformers were generated
                         mol.mol.SetProp(
                             f"rdkit_{ff}_energy", mol.mol.GetProp(f"rdkit_{ff}_energy")
                         )
@@ -249,4 +450,6 @@ class GetSimilarityScores:
                         mol.mol.SetProp("PYPAPER_" + col, mol_prop)
                 sd_writer.write(mol.mol)
             sd_writer.close()
+        et = time.time()
+        print(f"Writing molecule file took: {et - st}")
         return df
