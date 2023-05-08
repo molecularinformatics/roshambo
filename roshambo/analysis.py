@@ -153,7 +153,18 @@ def calc_roc_auc(
     fpr, tpr, thresholds = roc_curve(combined_df["True Label"], combined_df[score])
     df_rates = pd.DataFrame({"FPR": fpr, "TPR": tpr})
     df_rates.to_csv("roc.csv", sep="\t", index=False)
-    return df, df_rates
+    return auc_values, roce_values
+
+
+def calc_p_value(auc_values_a, auc_values_b):
+    from scipy.stats import t
+
+    diff = np.mean(auc_values_a - auc_values_b)
+    se_diff = np.std(auc_values_a - auc_values_b, ddof=1) / np.sqrt(len(auc_values_a))
+    t_stat = (diff - (np.nanmean(auc_values_b) - np.nanmean(auc_values_a))) / se_diff
+    dof = len(auc_values_a) - 1
+    p_value = t.cdf(t_stat, dof)
+    return p_value
 
 
 def plot_mult_roc(
