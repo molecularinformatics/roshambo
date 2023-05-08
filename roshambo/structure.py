@@ -152,7 +152,7 @@ class Molecule:
         self,
         n_confs=10,
         random_seed=999,
-        method="ETKDGv2",
+        method="ETKDGv3",
         ff="MMFF94s",
         add_hs=True,
         opt_confs=False,
@@ -220,7 +220,7 @@ class Molecule:
             "ETDG",
             "ETKDG",
             "ETKDGv2",
-            # "ETKDGv3",
+            "ETKDGv3",
         ], f"{method} not supported for generating conformers"
 
         # Define parameters for embedding conformers
