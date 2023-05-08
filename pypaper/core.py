@@ -15,23 +15,23 @@ from scipy.spatial.transform import Rotation
 
 from rdkit.Chem import AllChem
 
-from pypaper.grid import Grid
-from pypaper.cpaper import cpaper
-from pypaper.grid_overlap import (
+from roshambo.grid import Grid
+from roshambo.cpaper import cpaper
+from roshambo.grid_overlap import (
     calc_gaussian_overlap_vol,
     calc_multi_gaussian_overlap_vol,
 )
-from pypaper.analytic_overlap import (
+from roshambo.analytic_overlap import (
     calc_analytic_overlap_vol_recursive,
     calc_multi_analytic_overlap_vol_recursive,
 )
-from pypaper.pharmacophore import (
+from roshambo.pharmacophore import (
     calc_pharmacophore,
     calc_pharm_overlap,
     calc_multi_pharm_overlap,
 )
-from pypaper.scores import scores
-from pypaper.utilities import prepare_mols
+from roshambo.scores import scores
+from roshambo.utilities import prepare_mols
 
 
 class GetSimilarityScores:
