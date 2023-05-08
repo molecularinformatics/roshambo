@@ -148,6 +148,11 @@ setuptools.setup(
     install_requires=requirements,
     build_backend="setuptools.build_meta",
     packages=setuptools.find_packages(),
+    entry_points={
+        "console_scripts": [
+            "roshambo = roshambo.cli:main",
+        ],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "Development Status :: 3 - Alpha",
