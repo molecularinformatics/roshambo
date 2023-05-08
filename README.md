@@ -1,8 +1,8 @@
-# pypaper
+# roshambo
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-`pypaper` is a python package for robust Gaussian molecular shape comparison. It provides efficient and fast algorithms for comparing the shapes of small molecules. 
+`roshambo` is a python package for robust Gaussian molecular shape comparison. It provides efficient and fast algorithms for comparing the shapes of small molecules. 
 The package supports input file formats including PDB, MOL, and SMILES. It uses [PAPER](https://simtk.org/projects/paper/)
  in the backend for overlap optimization. 
 
@@ -10,7 +10,7 @@ The package supports input file formats including PDB, MOL, and SMILES. It uses 
 
 ### Prerequisites
 
-`pypaper` requires the following packages to be installed:
+`roshambo` requires the following packages to be installed:
 
 - numpy
 - pandas
@@ -21,26 +21,26 @@ The package supports input file formats including PDB, MOL, and SMILES. It uses 
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/rashatwi/pypaper.git
+    git clone https://github.com/rashatwi/roshambo.git
     ```
 
-2. Navigate to the pypaper directory:
+2. Navigate to the roshambo directory:
 
     ```bash
-    cd pypaper
+    cd roshambo
     ```
 
 3. Install the package:
 
     ```bash
-    python setup.py build_ext
+    python setup1.py build_ext
     ```
    
 ## Usage
 
 ```python
-import pypaper
+import roshambo
 
 # Call functions from the package
-pypaper.some_function()
+roshambo.some_function()
 
