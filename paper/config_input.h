@@ -13,7 +13,7 @@
 
 #ifndef _CONFIG_INPUT_H_
 #define _CONFIG_INPUT_H_
-//#define ALL_CARBON_RADII
+#define ALL_CARBON_RADII
 #define IGNORE_HYDROGENS
-#define INIT_MODE 2
+#define INIT_MODE 7
 #endif
