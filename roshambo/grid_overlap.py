@@ -1,7 +1,7 @@
 import numpy as np
 
-from pypaper import constants
-from pypaper.grid import Grid
+from roshambo import constants
+from roshambo.grid import Grid
 
 
 def rho(atoms, gcs):

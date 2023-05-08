@@ -1,4 +1,4 @@
-from pypaper.core import GetSimilarityScores
+from roshambo.core import GetSimilarityScores
 
 
 def get_similarity_scores(

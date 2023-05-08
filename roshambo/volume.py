@@ -1,6 +1,6 @@
 import numpy as np
 
-from pypaper.grid import Grid
+from roshambo.grid import Grid
 
 KAPPA = 2.41798793102
 PI = 3.14159265358

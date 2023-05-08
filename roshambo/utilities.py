@@ -9,7 +9,7 @@ from rdkit import Chem
 from rdkit.Chem import rdmolfiles
 from rdkit.Chem import AllChem
 
-from pypaper.structure import Molecule
+from roshambo.structure import Molecule
 
 try:
     from openeye import oechem

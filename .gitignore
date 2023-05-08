@@ -1,6 +1,6 @@
 __pycache__/
 .DS_Store
-pypaper.egg-info
+roshambo.egg-info
 dist
 _build
 build

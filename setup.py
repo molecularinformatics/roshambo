@@ -128,15 +128,15 @@ with open(os.path.join(module_dir, "requirements.txt")) as f:
     requirements = f.read().splitlines()
 
 setuptools.setup(
-    name="PyPAPER",
+    name="roshambo",
     version="0.0.1",
     author="Rasha Atwi",
     author_email="rasha.atwi@biogen.edu",
-    description="pypaper contains is a python package for robust Gaussian molecular "
+    description="roshambo is a python package for robust Gaussian molecular "
     "shape comparison",
     long_description=open(os.path.join(module_dir, "README.md")).read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/rashatwi/pypaper",
+    url="https://github.com/rashatwi/roshambo",
     install_requires=requirements,
     packages=setuptools.find_packages(),
     classifiers=[

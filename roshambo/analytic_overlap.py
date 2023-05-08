@@ -5,7 +5,7 @@ import numpy as np
 
 from itertools import combinations
 
-from pypaper import constants
+from roshambo import constants
 
 
 def calc_analytic_overlap_vol(ref_mol, fit_mol):

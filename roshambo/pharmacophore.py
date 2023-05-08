@@ -6,7 +6,7 @@ import numpy as np
 from rdkit.Chem import AllChem
 from rdkit.Geometry import Point3D
 
-from pypaper import constants
+from roshambo import constants
 
 
 FEATURES = {
