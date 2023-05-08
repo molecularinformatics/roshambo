@@ -1,6 +1,6 @@
-RDPATH=/UserUCDD/ratwi/rdkit/Code
-CCFLAGS=-O2 -I$(RDPATH) -DORIG_GLOBAL -DFAST_OVERLAP -DNO_DIV_ADDRESS -std=c++11
-LDFLAGS=-L/UserUCDD/ratwi/rdkit/lib
+RDPATH=/UserUCDD/ratwi/rdkit2023/Code
+CCFLAGS=-O2 -I$(RDPATH) -DORIG_GLOBAL -DFAST_OVERLAP -DNO_DIV_ADDRESS -std=c++17
+LDFLAGS=-L/UserUCDD/ratwi/rdkit2023/lib
 PTXFLAGS=-Xcompiler -O2 -arch sm_50 -Xptxas -v
 all: paper
 clean:
