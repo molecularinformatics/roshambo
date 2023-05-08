@@ -15,6 +15,7 @@ def calc_roc_auc(
     eevs=None,
     plot=True,
     random_state=None,
+    log=False,
     interpolation=False,
 ):
     """
@@ -127,6 +128,9 @@ def calc_roc_auc(
 
         plt.xlabel("False Positive Rate", fontsize=18, fontweight="bold")
         plt.ylabel("True Positive Rate", fontsize=18, fontweight="bold")
+        if log:
+            plt.xscale("log")
+            # plt.yscale("log")
         plt.title("ROC Curve", fontsize=18, fontweight="bold")
         plt.legend(fontsize=16, frameon=False)
         plt.savefig("auc_roc.jpg", dpi=500)
@@ -158,6 +162,7 @@ def plot_mult_roc(
     colors_dict=None,
     title="ROC",
     figsize=(6, 5),
+    log=False,
     filename="roc_comparison.jpg",
 ):
     """Plots multiple ROC curves on the same figure.
@@ -232,6 +237,9 @@ def plot_mult_roc(
     ax.spines["bottom"].set_linewidth(2)
     ax.spines["left"].set_linewidth(2)
     ax.spines["right"].set_linewidth(2)
+
+    if log:
+        plt.xscale("log")
 
     # Set ticks
     ax.tick_params(axis="both", which="both", direction="in", length=6, labelsize=18)
