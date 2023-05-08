@@ -10,3 +10,11 @@ group_by_package = true
 force_alphabetical_sort_within_sections = true
 combine_straight_imports = true
 balanced_wrapping = true
+
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+    "Cython",
+]
+build-backend = "setuptools.build_meta"
