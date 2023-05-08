@@ -4,7 +4,7 @@ import setuptools
 from Cython.Distutils import build_ext
 from distutils.extension import Extension
 
-module_dir = os.path.dirname(os.path.abspath(__file__))
+# module_dir = os.path.dirname(os.path.abspath(__file__))
 
 RDBASE = os.environ.get("RDBASE")
 if not RDBASE:
@@ -21,7 +21,7 @@ for component in MyRDKit_FIND_COMPONENTS:
         raise Exception(f"Didn't find RDKit {component} library.")
     RDKIT_LIBRARIES.append(library_path)
 
-PAPER_DIR = os.path.join(module_dir, "paper")
+PAPER_DIR = "paper"  # os.path.join(module_dir, "paper")
 CCFLAGS = [
     "-O2",
     f"-I{RDKIT_INCLUDE_DIR}",
@@ -64,7 +64,9 @@ def customize_compiler_for_nvcc(self):
         if os.path.splitext(src)[1] == ".cu":
             self.set_executable("compiler_so", CUDA["nvcc"])
             postargs = extra_postargs["nvcc"]
-        elif src == os.path.join(module_dir, "pypaper", "cpaper.cpp"):
+        elif src == os.path.join(
+            "roshambo", "cpaper.cpp"
+        ):  # os.path.join(module_dir, "roshambo", "cpaper.cpp"):
             self.set_executable("compiler_so", CUDA["nvcc"])
             postargs = [
                 f"-I{RDKIT_INCLUDE_DIR}",
@@ -98,7 +100,9 @@ CUDA = locate_cuda()
 ext = Extension(
     name="cpaper",
     sources=[
-        os.path.join(module_dir, "pypaper", "cpaper.pyx"),
+        os.path.join(
+            "roshambo", "cpaper.pyx"
+        ),  # os.path.join(module_dir, "roshambo", "cpaper.pyx"),
         os.path.join(PAPER_DIR, "deviceAnalyticVolume.cu"),
         os.path.join(PAPER_DIR, "hostAnalyticVolume.cu"),
         os.path.join(PAPER_DIR, "deviceOverlay.cu"),
@@ -124,7 +128,9 @@ ext = Extension(
 )
 
 # Load requirements.txt
-with open(os.path.join(module_dir, "requirements.txt")) as f:
+with open(
+    "requirements.txt"
+) as f:  # open(os.path.join(module_dir, "requirements.txt")) as f:
     requirements = f.read().splitlines()
 
 setuptools.setup(
@@ -134,7 +140,9 @@ setuptools.setup(
     author_email="rasha.atwi@biogen.edu",
     description="roshambo is a python package for robust Gaussian molecular "
     "shape comparison",
-    long_description=open(os.path.join(module_dir, "README.md")).read(),
+    long_description=open(
+        "README.md"
+    ).read(),  # open(os.path.join(module_dir, "README.md")).read(),
     long_description_content_type="text/markdown",
     url="https://github.com/rashatwi/roshambo",
     install_requires=requirements,
