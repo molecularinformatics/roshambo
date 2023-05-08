@@ -1,5 +1,4 @@
 import time
-import math
 
 import numpy as np
 
@@ -42,8 +41,8 @@ def calc_analytic_overlap_vol(ref_mol, fit_mol):
         (ref_coords[:, np.newaxis, :] - fit_coords[np.newaxis, :, :]) ** 2, axis=2
     )
 
-    pi = (4 / 3) * constants.PI * (constants.KAPPA / constants.PI) ** 1.5
-    pij = pi * pi
+    # Calculate the constants needed for the Gaussian overlap volume calculation
+    pij = constants.CONSTANT_P * constants.CONSTANT_P
     ai = (constants.KAPPA / (ref_radii**2))[:, np.newaxis]
     aj = (constants.KAPPA / (fit_radii**2))[np.newaxis, :]
     aij = ai + aj
