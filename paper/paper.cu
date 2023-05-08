@@ -151,7 +151,7 @@ extern "C" float** paper(int gpuID, list<RDKit::ROMol*>& molecules) {
             printf("Fit molecule %d: starting overlap: %f, (putative) ending overlap: %f, ending device overlap: %f, ending host overlap: %f\n\n",i,hostDeviceStartOvl[i],hostDeviceOverlaps[i],hostDeviceEndOvl[i],hostOvl);*/
         }
         for (uint i = 0; i < distinctMols; i++) {
-            printf("Molecule id #%d: optimal overlap value = %f\n",i,bestOverlaps[i]);
+            //printf("Molecule id #%d: optimal overlap value = %f\n",i,bestOverlaps[i]);
             //float *xf = bestTransforms+i*7;
             //printf("[ %.2f %.2f %.2f; %.2f %.2f %.2f %.2f]\n",xf[0],xf[1],xf[2],xf[3],xf[4],xf[5],xf[6]);
             float* matrix = transformToCompensatedMatrix(bestTransforms+i*7,com_ref,com_fit[i]);
@@ -160,7 +160,7 @@ extern "C" float** paper(int gpuID, list<RDKit::ROMol*>& molecules) {
                 newArray[j] = matrix[j];
             }
             matrices[i] = newArray;
-            printTransformMatrix(matrix,stdout);
+            //printTransformMatrix(matrix,stdout);
             free(matrix);
         }
         //printf("Optimization kernel took %f ms (%f ms/mol)\n",(optend-optstart)/1000.0,(optend-optstart)/(1000.0*distinctMols));
