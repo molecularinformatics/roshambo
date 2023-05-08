@@ -26,7 +26,9 @@
 #include "transformTools.h"
 #include <sys/time.h>
 #include <cuda_runtime.h>
+#include <GraphMol/GraphMol.h>
 #include <GraphMol/FileParsers/FileParsers.h>
+#include <iostream>
 
 using namespace std;
 
