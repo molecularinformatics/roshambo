@@ -146,6 +146,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/rashatwi/roshambo",
     install_requires=requirements,
+    build_backend="setuptools.build_meta",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
