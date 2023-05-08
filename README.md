@@ -33,7 +33,7 @@ The package supports input file formats including PDB, MOL, and SMILES. It uses 
 3. Install the package:
 
     ```bash
-    python setup1.py build_ext
+    python setup.py build_ext
     ```
    
 ## Usage
