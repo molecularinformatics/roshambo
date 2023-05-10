@@ -369,6 +369,7 @@ def prepare_mols(
     st = time.time()
     processed_mols = []
     mol_names = []
+    mol_keys = []
 
     # Check if input file is SDF or SMILES
     is_sdf_input = any(
@@ -396,6 +397,7 @@ def prepare_mols(
         for mol in mols:
             processed_mols.append(mol)
             mol_names.append(mol.mol.GetProp("_Name"))
+            mol_keys.append(mol.get_inchikey())
 
     # Write processed molecules to an SDF file
     sd_writer = Chem.SDWriter("mols.sdf")
@@ -405,4 +407,4 @@ def prepare_mols(
 
     et = time.time()
     print(f"Preparing mols took: {et - st}")
-    return processed_mols, mol_names
+    return processed_mols, mol_names, mol_keys
