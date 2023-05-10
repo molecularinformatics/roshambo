@@ -14,6 +14,7 @@ from multiprocessing import Pool, cpu_count
 
 from scipy.spatial.transform import Rotation
 
+from rdkit import Chem
 from rdkit.Chem import AllChem
 
 from roshambo.grid import Grid
@@ -447,8 +448,10 @@ class GetSimilarityScores:
                     mol_props = df.loc[mol.mol.GetProp("_Name"), :]
                     for col in df_columns[1:]:
                         mol_prop = str(mol_props[col])
-                        mol.mol.SetProp("PYPAPER_" + col, mol_prop)
-                sd_writer.write(mol.mol)
+                        if col != "Original_Name" or col != "OriginalName":
+                            mol.mol.SetProp("PYPAPER_" + col, mol_prop)
+                mol_with_hs = Chem.AddHs(mol.mol, addCoords=True)
+                sd_writer.write(mol_with_hs)
             sd_writer.close()
         et = time.time()
         print(f"Writing molecule file took: {et - st}")
