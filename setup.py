@@ -8,7 +8,7 @@ from setuptools.command.build_ext import build_ext
 
 # module_dir = os.path.dirname(os.path.abspath(__file__))
 
-env_vars = ["RDBASE", "RDKIT_INCLUDE_DIR", "RDKIT_LIB_DIR"]
+env_vars = ["RDBASE", "RDKIT_INCLUDE_DIR", "RDKIT_LIB_DIR", "RDKIT_DATA_DIR"]
 for var in env_vars:
     if var not in os.environ:
         raise Exception(f"{var} environment variable not set.")
