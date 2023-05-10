@@ -6,17 +6,20 @@ from distutils.extension import Extension
 
 # module_dir = os.path.dirname(os.path.abspath(__file__))
 
-RDBASE = os.environ.get("RDBASE")
-if not RDBASE:
-    raise Exception("RDBASE environment variable not set.")
+env_vars = ["RDBASE", "RDKIT_INCLUDE_DIR", "RDKIT_LIB_DIR"]
+for var in env_vars:
+    if var not in os.environ:
+        raise Exception(f"{var} environment variable not set.")
 
-RDKIT_INCLUDE_DIR = os.path.join(RDBASE, "Code")
-RDKIT_LIB_DIR = os.path.join(RDBASE, "lib")
+RDBASE = os.environ.get("RDBASE")
+RDKIT_INCLUDE_DIR = os.environ.get("RDKIT_INCLUDE_DIR")
+RDKIT_LIB_DIR = os.environ.get("RDKIT_LIB_DIR")
+
 MyRDKit_FIND_COMPONENTS = ["GraphMol", "SmilesParse", "FileParsers", "Depictor"]
 RDKIT_LIBRARIES = []
 for component in MyRDKit_FIND_COMPONENTS:
     print(f"Looking for RDKit component {component}")
-    library_path = os.path.join(RDBASE, "lib", f"libRDKit{component}.so")
+    library_path = os.path.join(RDKIT_LIB_DIR, f"libRDKit{component}.so")
     if not os.path.isfile(library_path):
         raise Exception(f"Didn't find RDKit {component} library.")
     RDKIT_LIBRARIES.append(library_path)
