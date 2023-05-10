@@ -168,8 +168,8 @@ setuptools.setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     python_requires=">=3.7",
-    # include_package_data=True,
-    # package_data={"": ["roshambo/*.cpython*"]},
+    include_package_data=True,
+    package_data={"roshambo": ["roshambo/*.cpython*.so"]},
     ext_modules=[ext],
     cmdclass={"build_ext": CustomBuildExt},
 )
