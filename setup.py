@@ -1,8 +1,10 @@
 import os
 
 import setuptools
-from Cython.Distutils import build_ext
-from distutils.extension import Extension
+
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
+
 
 # module_dir = os.path.dirname(os.path.abspath(__file__))
 
