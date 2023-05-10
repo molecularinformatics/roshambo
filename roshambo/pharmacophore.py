@@ -28,7 +28,8 @@ def calc_pharmacophore(rdkit_mol, fdef_path=None):
             The RDKit molecule for which the pharmacophore features will be calculated.
         fdef_path (str, optional):
             The path to the .fdef file. Defaults to None.
-            Uses BaseFeatures.fdef if not provided.
+            Uses BaseFeatures.fdef if not provided. Note that this requires the
+            RDKIT_DATA_DIR environment variable to be set.
 
     Returns:
         list:
@@ -45,11 +46,11 @@ def calc_pharmacophore(rdkit_mol, fdef_path=None):
 
     if not fdef_path:
         # Get the path to the BaseFeatures.fdef file
-        rdkit_path = os.environ.get("RDBASE")
-        if rdkit_path:
-            fdef_path = os.path.join(rdkit_path, "Data/BaseFeatures.fdef")
+        rdkit_data_path = os.environ.get("RDKIT_DATA_DIR")
+        if rdkit_data_path:
+            fdef_path = os.path.join(rdkit_data_path, "BaseFeatures.fdef")
         else:
-            logging.error("RDBASE environment variable is not set.")
+            logging.error("RDKIT_DATA_DIR environment variable is not set.")
             return None
 
     # Build a feature factory using the .fdef file
