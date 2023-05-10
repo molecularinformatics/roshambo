@@ -234,7 +234,11 @@ class Molecule:
                 setattr(args, k, v)
 
         if add_hs:
-            self.mol = AllChem.AddHs(self.mol)
+            self.mol = Chem.AddHs(
+                self.mol,
+                explicitOnly=False,
+                addCoords=True,
+            )
 
         # Embed conformers
         confs = rdDistGeom.EmbedMultipleConfs(self.mol, numConfs=n_confs, params=args)
