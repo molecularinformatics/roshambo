@@ -201,6 +201,7 @@ def smiles_to_rdmol(
                 used_names[name] = 0
                 new_name = f"{name}_0"
             mol.SetProp("_Name", new_name)
+            mol.SetProp("Original_Name", name)
             rdmols.append(mol)
     if not rdmols:
         raise ValueError("No valid molecules found in input.")
