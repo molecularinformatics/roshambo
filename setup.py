@@ -103,7 +103,7 @@ class CustomBuildExt(build_ext):
 CUDA = locate_cuda()
 
 ext = Extension(
-    name="cpaper",
+    name="roshambo.cpaper",
     sources=[
         os.path.join(
             "roshambo", "cpaper.pyx"
