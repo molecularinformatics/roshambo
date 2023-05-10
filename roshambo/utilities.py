@@ -245,6 +245,7 @@ def sdf_to_rdmol(file_names, ignore_hs=True):
                 new_name = f"{name}_0"
             # Rename molecule with new name
             mol.SetProp("_Name", new_name)
+            mol.SetProp("Original_Name", name)
             mols.append(mol)
     return mols
 
