@@ -86,12 +86,12 @@ def calc_rdkit_pharm(rdkit_mol):
                 feature_data[1],
             ]
             # Calculate the normal vector for the feature, if it exists
-            if feature_data[1]:
-                if fam == "Aromatic":
-                    n = calc_normal_aromatic(rdkit_mol, list(atom_indices), pos)
-                else:
-                    n = calc_normal(rdkit_mol, rdkit_mol.GetAtoms()[atom_indices[0]])
-                p.append(n)
+            # if feature_data[1]:
+            #     if fam == "Aromatic":
+            #         n = calc_normal_aromatic(rdkit_mol, list(atom_indices), pos)
+            #     else:
+            #         n = calc_normal(rdkit_mol, rdkit_mol.GetAtoms()[atom_indices[0]])
+            #     p.append(n)
             pharmacophore.append(p)
     return pharmacophore
 
