@@ -3,7 +3,7 @@ import copy
 import time
 import logging
 
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 
 from rdkit import Chem
 from rdkit.Chem import rdmolfiles
@@ -387,7 +387,7 @@ def prepare_mols(
     # Process each molecule
     input_data = [(rdmol, ignore_hs, n_confs, keep_mol) for rdmol in rdmols]
     kwargs_list = [conf_kwargs] * len(input_data)
-    with Pool() as pool:
+    with Pool(processes=cpu_count()) as pool:
         results = pool.starmap(
             process_molecule_with_kwargs, zip(input_data, kwargs_list)
         )
