@@ -18,8 +18,7 @@ FEATURES = {
     "Hydrophobe": [1.0, False],
 }
 
-
-def calc_pharmacophore(rdkit_mol, fdef_path=None):
+def calc_pharm(rdkit_mol, fdef_path=None, write_to_file=False):
     """
     Calculates the pharmacophore features of an RDKit molecule.
 
@@ -178,7 +177,7 @@ def calc_multi_pharm_overlap(fit_mol, ref_pharm, fdef_path):
     """
 
     # Calculate the pharmacophore features for the fit molecule
-    fit_pharm = calc_pharmacophore(fit_mol.mol, fdef_path)
+    fit_pharm = calc_pharm(fit_mol.mol, fdef_path)
     # Calculate the self-overlap of the fit molecule
     fit_overlap = calc_pharm_overlap(fit_pharm, fit_pharm)
     # Calculate the pharmacophoric overlap between the reference molecule and the
@@ -208,8 +207,8 @@ def color_tanimoto(ref_mol, fit_mol, fdef_path=None):
     """
 
     # Calculate the pharmacophoric properties of the reference and fit molecules
-    ref_pharm = calc_pharmacophore(ref_mol, fdef_path)
-    fit_pharm = calc_pharmacophore(fit_mol, fdef_path)
+    ref_pharm = calc_pharm(ref_mol, fdef_path)
+    fit_pharm = calc_pharm(fit_mol, fdef_path)
     ref_volume = 0
     fit_volume = 0
     overlap = 0

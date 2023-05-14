@@ -28,7 +28,7 @@ from roshambo.analytic_overlap import (
     calc_multi_analytic_overlap_vol_recursive,
 )
 from roshambo.pharmacophore import (
-    calc_pharmacophore,
+    calc_pharm,
     calc_pharm_overlap,
     calc_multi_pharm_overlap,
 )
@@ -346,7 +346,7 @@ class GetSimilarityScores:
             st = time.time()
             # Calculate the pharmacophore features of the reference molecule and its
             # self-overlap volume for color scoring
-            ref_pharm = calc_pharmacophore(self.ref_mol.mol, fdef_path)
+            ref_pharm = calc_pharm(self.ref_mol.mol, fdef_path)
             ref_volume = calc_pharm_overlap(ref_pharm, ref_pharm)
             # Calculate fit self color overlap volume and color overlap volume between
             # reference and fit molecule
