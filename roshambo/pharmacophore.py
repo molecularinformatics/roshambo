@@ -11,14 +11,6 @@ from roshambo import constants
 from roshambo.constants import FEATURES
 from roshambo.smarts import load_smarts_from_json, calc_custom_pharm
 
-FEATURES = {
-    "Donor": [1.0, True],
-    "Acceptor": [1.0, True],
-    "PosIonizable": [1.0, False],
-    "NegIonizable": [1.0, False],
-    "Aromatic": [0.7, True],
-    "Hydrophobe": [1.0, False],
-}
 
 def calc_pharm(rdkit_mol, fdef_path=None, write_to_file=False):
     """
