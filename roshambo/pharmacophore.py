@@ -2,12 +2,14 @@ import os
 import logging
 
 import numpy as np
+import pandas as pd
 
 from rdkit.Chem import AllChem
 from rdkit.Geometry import Point3D
 
 from roshambo import constants
-
+from roshambo.constants import FEATURES
+from roshambo.smarts import load_smarts_from_json, calc_custom_pharm
 
 FEATURES = {
     "Donor": [1.0, True],
@@ -29,6 +31,9 @@ def calc_pharm(rdkit_mol, fdef_path=None, write_to_file=False):
             The path to the .fdef file. Defaults to None.
             Uses BaseFeatures.fdef if not provided. Note that this requires the
             RDKIT_DATA_DIR environment variable to be set.
+        write_to_file (bool, optional):
+            Whether to write the pharmacophore features to a .csv file in the same
+            working directory. Defaults to False.
 
     Returns:
         list:
@@ -44,13 +49,28 @@ def calc_pharm(rdkit_mol, fdef_path=None, write_to_file=False):
     """
 
     if not fdef_path:
-        # Get the path to the BaseFeatures.fdef file
-        rdkit_data_path = os.environ.get("RDKIT_DATA_DIR")
-        if rdkit_data_path:
-            fdef_path = os.path.join(rdkit_data_path, "BaseFeatures.fdef")
-        else:
-            logging.error("RDKIT_DATA_DIR environment variable is not set.")
-            return None
+        pharmacophore = calc_rdkit_pharm(rdkit_mol)
+    else:
+        compiled_smarts = load_smarts_from_json(fdef_path)
+        pharmacophore = calc_custom_pharm(rdkit_mol, compiled_smarts)
+
+    if write_to_file:
+        df = pd.DataFrame(
+            pharmacophore,
+            columns=["Type", "Atom Indices", "Coordinates", "Radius", "Normal"],
+        )
+        df.to_csv("pharmacophores.csv")
+    return pharmacophore
+
+
+def calc_rdkit_pharm(rdkit_mol):
+    # Get the path to the BaseFeatures.fdef file
+    rdkit_data_path = os.environ.get("RDKIT_DATA_DIR")
+    if rdkit_data_path:
+        fdef_path = os.path.join(rdkit_data_path, "BaseFeatures.fdef")
+    else:
+        logging.error("RDKIT_DATA_DIR environment variable is not set.")
+        return None
 
     # Build a feature factory using the .fdef file
     feature_factory = AllChem.BuildFeatureFactory(fdef_path)
