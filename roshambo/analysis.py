@@ -527,3 +527,78 @@ def plot_mult_enrichment(
 
     # Save the plot
     plt.savefig("enrichment.jpg", dpi=500, bbox_inches="tight")
+
+
+def plot_scores_dist(df, columns, title="Score Distributions"):
+    """
+    Plots the distributions of specified columns in a pandas DataFrame. Saves the file
+    as "scores_dist.jpg" in the same working directory.
+
+    Args:
+        df (pandas.DataFrame):
+            Input DataFrame.
+        columns (list):
+            List of column names to plot.
+        title (str, optional):
+            Title of the plot. Default is "Score Distributions".
+
+    Returns:
+        None
+    """
+
+    # Create subplots
+    fig, axes = plt.subplots(len(columns), 1, figsize=(8, len(columns) * 6))
+
+    # Iterate over columns and plot distributions
+    for i, column in enumerate(columns):
+        ax = axes[i]
+        data = df[column]
+
+        # Plot histogram
+        ax.hist(data, bins=20, color="#807FFF")
+
+        # Plot mean line
+        ax.axvline(
+            data.mean(),
+            color="black",
+            linestyle="--",
+            linewidth=4,
+            label="Mean: {:.2f}".format(data.mean()),
+        )
+
+        # Plot median line
+        ax.axvline(
+            data.median(),
+            color="#7FC080",
+            linestyle="--",
+            linewidth=4,
+            label="Median: {:.2f}".format(data.median()),
+        )
+
+        # Set legend properties
+        ax.legend(
+            frameon=False,
+            fontsize=18,
+        )
+
+        # Set spines properties
+        for spine in ["top", "bottom", "left", "right"]:
+            ax.spines[spine].set_linewidth(2)
+        ax.spines["left"].set_visible(False)
+        ax.spines["bottom"].set_visible(True)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+
+        # Set y-axis and x-axis properties
+        ax.yaxis.set_ticks([])
+        ax.xaxis.set_tick_params(width=0, labelsize=18)
+        ax.set_xlabel(column, fontsize=18, fontweight="bold")
+
+    # Adjust layout and title
+    plt.tight_layout()
+    plt.subplots_adjust(hspace=0.5, top=0.9)
+    fig.suptitle(title, fontsize=20, fontweight="bold", y=0.95)
+
+    # Save the plot
+    plt.savefig("score_dist.jpg", dpi=500, bbox_inches="tight")
+    plt.close(fig)
