@@ -6,10 +6,10 @@ CONSTANT_P = (4 / 3) * PI * (KAPPA / PI) ** 1.5
 EXP = math.exp(1)
 
 FEATURES = {
-    "Donor": [1.0, True],
-    "Acceptor": [1.0, True],
-    "PosIonizable": [1.0, False],
-    "NegIonizable": [1.0, False],
-    "Aromatic": [0.7, True],
-    "Hydrophobe": [1.0, False],
+    "Donor": [1.0, True, (0.5019607843137255, 0.5019607843137255, 1.0)],
+    "Acceptor": [1.0, True, (1.0, 0.5019607843137255, 0.5019607843137255)],
+    "PosIonizable": [1.0, False, (0.8352941176470589, 0.5019607843137255, 1.0)],
+    "NegIonizable": [1.0, False, (1.0, 0.6039215686274509, 0.2)],
+    "Aromatic": [0.7, True, (1.0, 0.8862745098039215, 0.5019607843137255)],
+    "Hydrophobe": [1.0, False, (0.5019607843137255, 1.0, 0.5019607843137255)],
 }
