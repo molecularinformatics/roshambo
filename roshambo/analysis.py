@@ -1,3 +1,4 @@
+import os
 import random
 
 import numpy as np
@@ -17,6 +18,7 @@ def calc_roc_auc(
     random_state=None,
     log=False,
     interpolation=False,
+    working_dir=None,
 ):
     """
     Calculate the ROC curve and AUC for a set of actives and decoys using bootstrapping
@@ -42,11 +44,18 @@ def calc_roc_auc(
         interpolation (bool, optional):
             Whether to use linear interpolation to estimate the TPR at the specified
             EEV, or to use the TPR and FPR values at the nearest FPR. Defaults to False.
+        working_dir (str, optional):
+            Path to the directory where the ROC curve will be saved. Defaults to
+            current working if not specified.
 
     Returns:
         tuple:
-            Tuple containing the AUC values and ROCE values for each bootstrap sample.
+            Tuple containing the AUC values and ROCE values for each bootstrap sample
+            along with a matplotlib.figure.Figure object if plot is set to True.
     """
+
+    if not working_dir:
+        working_dir = os.getcwd()
 
     # Load the data
     actives_df = pd.read_csv(actives_file, sep="\t")
@@ -133,27 +142,11 @@ def calc_roc_auc(
             # plt.yscale("log")
         plt.title("ROC Curve", fontsize=18, fontweight="bold")
         plt.legend(fontsize=16, frameon=False)
-        plt.savefig("auc_roc.jpg", dpi=500)
+        plt.savefig(f"{working_dir}/auc_roc.jpg", dpi=500)
         plt.close()
-
-    # Save results to a file
-    df = pd.DataFrame(
-        {
-            "Run Name": ["AUC"] + [f"{str(i * 100)}% Enrichment" for i in eevs],
-            "Mean": np.insert(roce_mean, 0, mean_auc),
-            "Median": np.insert(roce_median, 0, median_auc),
-            "CI_Lower": np.insert(ci_roce_lower, 0, ci_lower),
-            "CI_Upper": np.insert(ci_roce_upper, 0, ci_upper),
-        }
-    )
-    df = df.round(2)
-    df.to_csv("analysis.csv", sep="\t", index=False)
-
-    # Compute FPR and TPR from full data and save to a file
-    fpr, tpr, thresholds = roc_curve(combined_df["True Label"], combined_df[score])
-    df_rates = pd.DataFrame({"FPR": fpr, "TPR": tpr})
-    df_rates.to_csv("roc.csv", sep="\t", index=False)
-    return auc_values, roce_values
+        return auc_values, roce_values, fig
+    else:
+        return auc_values, roce_values
 
 
 def calc_p_value(auc_values_a, auc_values_b):
@@ -175,6 +168,7 @@ def plot_mult_roc(
     figsize=(6, 5),
     log=False,
     filename="roc_comparison.jpg",
+    working_dir=None,
 ):
     """Plots multiple ROC curves on the same figure.
 
@@ -199,12 +193,21 @@ def plot_mult_roc(
             Size of the plot. Default is (6, 5).
         filename (Optional[str]):
             Filename to save the plot. Default is "roc_comparison.jpg".
+        working_dir (Optional[str]):
+            Path the working directory where the plot will be saved. Default is the
+            current working directory if not specified.
 
     Raises:
         ValueError:
             If the lengths of rates_dict and analysis_dict are not equal,
             or if either dictionary has less than 2 items.
+
+    Returns:
+        matplotlib.figure.Figure.
     """
+
+    if not working_dir:
+        working_dir = os.getcwd()
 
     # Checkpoint 1: Check if the lengths of rates_dict and analysis_dict are equal
     # and greater than or equal to 2
@@ -256,7 +259,8 @@ def plot_mult_roc(
     ax.tick_params(axis="both", which="both", direction="in", length=6, labelsize=18)
 
     # Save the plot
-    plt.savefig(filename, dpi=500, bbox_inches="tight")
+    plt.savefig(f"{working_dir}/{filename}", dpi=500, bbox_inches="tight")
+    return fig
 
 
 def plot_mult_auc(
@@ -265,6 +269,7 @@ def plot_mult_auc(
     title="Mean AUC with 95% confidence interval",
     group_labels=None,
     figsize=(8, 6),
+    working_dir=None,
 ):
     """Plots the mean AUC with 95% confidence interval for multiple datasets.
 
@@ -285,6 +290,9 @@ def plot_mult_auc(
             "Data 1", "Data 2", etc. will be used.
         figsize (Tuple[int, int]):
             The size of the figure in inches. Default is (8, 6).
+        working_dir (str):
+            Path to the directory where the plot will be saved. Default is the
+            current working directory if not provided.
 
     Raises:
         ValueError:
@@ -293,8 +301,11 @@ def plot_mult_auc(
             number of groups.
 
     Returns:
-        None
+        matplotlib.figure.Figure.
     """
+
+    if not working_dir:
+        working_dir = os.getcwd()
 
     # Checkpoint 1: Check if all values in auc_dict have the same length
     lengths = set(len(v) for v in auc_dict.values())
@@ -371,7 +382,8 @@ def plot_mult_auc(
     ax.tick_params(direction="in", labelsize=16, length=6)
 
     # Save the plot
-    plt.savefig("auc_plot.jpg", dpi=500, bbox_inches="tight")
+    plt.savefig(f"{working_dir}/auc_plot.jpg", dpi=500, bbox_inches="tight")
+    return fig
 
 
 def plot_mult_enrichment(
@@ -381,6 +393,7 @@ def plot_mult_enrichment(
     group_labels=None,
     hatch_patterns=None,
     figsize=(8, 6),
+    working_dir=None,
 ):
     """
     Plots a stacked bar chart of enrichment factors for multiple datasets.
@@ -404,6 +417,9 @@ def plot_mult_enrichment(
             bars.
         figsize (Optional[Tuple[int, int]]):
             The size of the figure in inches. Default is (8, 6).
+        working_dir (Optional[str]):
+            Path to the directory where the figure will be saved. Default is the
+            current working directory if not specified.
 
     Raises:
         ValueError:
@@ -411,8 +427,11 @@ def plot_mult_enrichment(
             same as the number of files in any other value of enrich_dict.
 
     Returns:
-        None.
+        matplotlib.figure.Figure.
     """
+
+    if not working_dir:
+        working_dir = os.getcwd()
 
     num_datasets = len(enrich_dict.keys())
     num_groups = len(next(iter(enrich_dict.values())))
@@ -526,10 +545,11 @@ def plot_mult_enrichment(
     ax.tick_params(direction="in", labelsize=16, length=6)
 
     # Save the plot
-    plt.savefig("enrichment.jpg", dpi=500, bbox_inches="tight")
+    plt.savefig(f"{working_dir}/enrichment.jpg", dpi=500, bbox_inches="tight")
+    return fig
 
 
-def plot_scores_dist(df, columns, title="Score Distributions"):
+def plot_scores_dist(df, columns, title="Score Distributions", working_dir=None):
     """
     Plots the distributions of specified columns in a pandas DataFrame. Saves the file
     as "scores_dist.jpg" in the same working directory.
@@ -541,10 +561,15 @@ def plot_scores_dist(df, columns, title="Score Distributions"):
             List of column names to plot.
         title (str, optional):
             Title of the plot. Default is "Score Distributions".
+        working_dir (str, optional):
+            Path to the working directory where the figure will be saved. Default is
+            the current working directory if not specified.
 
     Returns:
-        None
+        matplotlib.figure.Figure.
     """
+    if not working_dir:
+        working_dir = os.getcwd()
 
     # Create subplots
     fig, axes = plt.subplots(len(columns), 1, figsize=(8, len(columns) * 6))
@@ -600,5 +625,6 @@ def plot_scores_dist(df, columns, title="Score Distributions"):
     fig.suptitle(title, fontsize=20, fontweight="bold", y=0.95)
 
     # Save the plot
-    plt.savefig("score_dist.jpg", dpi=500, bbox_inches="tight")
+    plt.savefig(f"{working_dir}/score_dist.jpg", dpi=500, bbox_inches="tight")
     plt.close(fig)
+    return fig
