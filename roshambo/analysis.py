@@ -128,6 +128,24 @@ def calc_roc_auc(
     roce_mean = np.nanmean(roce_values, axis=1)
     roce_median = np.nanmedian(roce_values, axis=1)
 
+    # Save results to a file
+    df = pd.DataFrame(
+        {
+            "Run Name": ["AUC"] + [f"{str(i * 100)}% Enrichment" for i in eevs],
+            "Mean": np.insert(roce_mean, 0, mean_auc),
+            "Median": np.insert(roce_median, 0, median_auc),
+            "CI_Lower": np.insert(ci_roce_lower, 0, ci_lower),
+            "CI_Upper": np.insert(ci_roce_upper, 0, ci_upper),
+        }
+    )
+    df = df.round(2)
+    df.to_csv(f"{working_dir}/analysis.csv", sep="\t", index=False)
+
+    # Compute FPR and TPR from full data and save to a file
+    fpr, tpr, thresholds = roc_curve(combined_df["True Label"], combined_df[score])
+    df_rates = pd.DataFrame({"FPR": fpr, "TPR": tpr})
+    df_rates.to_csv(f"{working_dir}/roc.csv", sep="\t", index=False)
+
     # Plot the ROC curve
     if plot:
         fig, ax = plt.subplots()
