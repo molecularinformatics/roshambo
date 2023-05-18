@@ -41,6 +41,8 @@ def calc_roc_auc(
             Whether to plot the ROC curve. Defaults to True.
         random_state (int, optional):
             Random seed for reproducibility. Defaults to None.
+        log (bool, optional):
+            Whether to create a semi-log plot. Defaults to False.
         interpolation (bool, optional):
             Whether to use linear interpolation to estimate the TPR at the specified
             EEV, or to use the TPR and FPR values at the nearest FPR. Defaults to False.
@@ -191,6 +193,8 @@ def plot_mult_roc(
             Title of the plot. Default is "ROC".
         figsize (Optional[Tuple[int, int]]):
             Size of the plot. Default is (6, 5).
+        log (Optional[bool]):
+            Whether to create a semi-log plot. Default is False.
         filename (Optional[str]):
             Filename to save the plot. Default is "roc_comparison.jpg".
         working_dir (Optional[str]):
@@ -580,7 +584,7 @@ def plot_scores_dist(df, columns, title="Score Distributions", working_dir=None)
         data = df[column]
 
         # Plot histogram
-        ax.hist(data, bins=20, color="#807FFF")
+        ax.hist(data, bins=20, color="#80B9F9")
 
         # Plot mean line
         ax.axvline(
@@ -594,7 +598,7 @@ def plot_scores_dist(df, columns, title="Score Distributions", working_dir=None)
         # Plot median line
         ax.axvline(
             data.median(),
-            color="#7FC080",
+            color="#6DAD46",
             linestyle="--",
             linewidth=4,
             label="Median: {:.2f}".format(data.median()),
