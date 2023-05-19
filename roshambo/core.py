@@ -117,7 +117,7 @@ class GetSimilarityScores:
         self.ref_file = f"{self.working_dir}/{ref_file}"
         self.dataset_files = glob.glob(f"{self.working_dir}/{dataset_files_pattern}")
 
-        ref_mol, _ = prepare_mols(
+        ref_mol, _, _ = prepare_mols(
             [self.ref_file],
             ignore_hs=ignore_hs,
             n_confs=0,
@@ -129,7 +129,7 @@ class GetSimilarityScores:
         )
         self.ref_mol = ref_mol[0]
         # TODO:Check if saving all molecules into numpy arrays will cause memory leaks
-        self.dataset_mols, self.dataset_names = prepare_mols(
+        self.dataset_mols, self.dataset_names, self.dataset_keys = prepare_mols(
             self.dataset_files,
             ignore_hs=ignore_hs,
             n_confs=n_confs,
@@ -374,6 +374,10 @@ class GetSimilarityScores:
         # Prepare the final df data
         df_data = {
             "Molecule": self.dataset_names,
+            "OriginalName": [
+                mol.mol.GetProp("Original_Name") for mol in self.dataset_mols
+            ],
+            "Hash": self.dataset_keys,
             "ComboTanimoto": shape_tanimoto + color_tanimoto,
             "ShapeTanimoto": shape_tanimoto,
             "ColorTanimoto": color_tanimoto,
@@ -387,28 +391,16 @@ class GetSimilarityScores:
         }
         # Create the final df with the scores and molecule names
         df = pd.DataFrame(df_data)
-        # TODO: fix this by generating unique id to each molecule using
-        #  non-standard inchis (requires newer rdkit version)
-        max_underscores = df["Molecule"].apply(lambda x: x.count("_")).max()
-
-        def _split_at_last_underscore(name):
-            underscore_count = name.count("_")
-            if underscore_count == max_underscores:
-                parts = name.rsplit("_", 1)
-                return parts[0]
-            else:
-                return name
-
-        df["Prefix"] = df["Molecule"].apply(_split_at_last_underscore)
-        df = df.sort_values(by=["Prefix", sort_by], ascending=[True, False])
+        df = df.sort_values(by=sort_by, ascending=False)
         idx = (
-            df.groupby("Prefix")
+            df.groupby("Hash")
             .apply(lambda x: x.nlargest(max_conformers, sort_by))
             .index.levels[1]
         )
         df = df.loc[idx].sort_values(by=sort_by, ascending=False).round(3)
-        del df["Prefix"]
-        df.to_csv(f"{self.working_dir}/pypaper.csv", index=False, sep="\t")
+        del df["Hash"]
+        df.to_csv(f"{self.working_dir}/roshambo.csv", index=False, sep="\t")
+        del df["OriginalName"]
         et = time.time()
         print(f"Creating dataframe took: {et - st}")
 
