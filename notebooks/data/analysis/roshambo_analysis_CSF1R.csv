@@ -1,0 +1,6 @@
+Run Name	Mean	Median	CI_Lower	CI_Upper
+AUC	0.76	0.76	0.69	0.82
+0.5% Enrichment	46.3	46.27	23.71	69.4
+1.0% Enrichment	23.37	23.33	12.24	35.19
+2.0% Enrichment	11.69	11.67	6.12	17.59
+5.0% Enrichment	5.05	5.0	2.69	7.45

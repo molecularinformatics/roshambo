@@ -126,6 +126,7 @@ class GetSimilarityScores:
             name_prefix="ref",
             smiles_kwargs=smiles_kwargs,
             embed_kwargs=embed_kwargs,
+            working_dir=self.working_dir,
         )
         self.ref_mol = ref_mol[0]
         # TODO:Check if saving all molecules into numpy arrays will cause memory leaks
@@ -137,6 +138,7 @@ class GetSimilarityScores:
             name_prefix=name_prefix,
             smiles_kwargs=smiles_kwargs,
             embed_kwargs=embed_kwargs,
+            working_dir=self.working_dir,
             **conf_kwargs,
         )
 

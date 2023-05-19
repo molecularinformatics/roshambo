@@ -332,6 +332,7 @@ def prepare_mols(
     name_prefix="mol",
     smiles_kwargs=None,
     embed_kwargs=None,
+    working_dir=None,
     **conf_kwargs,
 ):
     """
