@@ -193,29 +193,29 @@ def plot_mult_roc(
     """Plots multiple ROC curves on the same figure.
 
     Args:
-        rates_dict (Dict[str, str]):
+        rates_dict (dict):
             Dictionary where keys are the names of the datasets and
             values are the filenames of the corresponding ROC curve data
             in tab-separated format.
-        analysis_dict (Dict[str, str]):
+        analysis_dict (dict):
             Dictionary where keys are the names of the datasets and
             values are the filenames of the corresponding analysis data
             in tab-separated format.
-        colors_dict (Optional[Dict[str, str]]):
+        colors_dict (dict, optional):
             Dictionary where keys are the names of the datasets and
             values are the corresponding color codes in hex format.
             If not provided or if the length of the dictionary is not
             equal to the length of rates_dict and analysis_dict,
             random colors will be generated for each dataset.
-        title (Optional[str]):
+        title (str, optional):
             Title of the plot. Default is "ROC".
-        figsize (Optional[Tuple[int, int]]):
+        figsize (tuple(int, int), optional):
             Size of the plot. Default is (6, 5).
-        log (Optional[bool]):
+        log (bool, optional):
             Whether to create a semi-log plot. Default is False.
-        filename (Optional[str]):
+        filename (str, optional):
             Filename to save the plot. Default is "roc_comparison.jpg".
-        working_dir (Optional[str]):
+        working_dir (str, optional):
             Path the working directory where the plot will be saved. Default is the
             current working directory if not specified.
 
@@ -296,23 +296,23 @@ def plot_mult_auc(
     """Plots the mean AUC with 95% confidence interval for multiple datasets.
 
     Args:
-        auc_dict (Dict[str, List[str]]):
+        auc_dict (dict):
             A dictionary where the keys are the names of the datasets
             and the values are lists of filepaths to the AUC analysis files.
             Each file should be a tab-separated file with columns "Run Name",
             "Mean", "Median", "CI_Lower", and "CI_Upper".
-        colors_dict (Optional[Dict[str, str]]):
+        colors_dict (dict, optional):
             A dictionary where the keys are the names of the datasets
             and the values are colors in hex format. If not provided, random
             colors will be generated.
-        title (str):
+        title (str, optional):
             The title of the plot. Default is "Mean AUC with 95% confidence interval".
-        group_labels (Optional[List[str]]):
+        group_labels (list, optional):
             A list of labels for each group of datasets. If not provided,
             "Data 1", "Data 2", etc. will be used.
-        figsize (Tuple[int, int]):
+        figsize (tuple(int, int), optional):
             The size of the figure in inches. Default is (8, 6).
-        working_dir (str):
+        working_dir (str, optional):
             Path to the directory where the plot will be saved. Default is the
             current working directory if not provided.
 
@@ -421,25 +421,25 @@ def plot_mult_enrichment(
     Plots a stacked bar chart of enrichment factors for multiple datasets.
 
     Args:
-        enrich_dict (Dict[str, List[str]]):
+        enrich_dict (dict):
             A dictionary of file paths for the enrichment analysis output
             files, keyed by the dataset name. Each value in the dictionary
             should be a list of file paths corresponding to the different
             enrichment analyses run on that dataset.
-        colors_dict (Optional[Dict[int, str]]):
+        colors_dict (dict, optional):
             A dictionary of color strings keyed by integer values, used to
             color the different enrichment factor components. If not provided,
             a default color map is used.
-        title (Optional[str]):
+        title (str, optional):
             The title of the plot. Default is "Enrichment factors with percentage cutoffs".
-        group_labels (Optional[List[str]]):
+        group_labels (list, optional):
             A list of labels for each group in the stacked bars.
-        hatch_patterns (Optional[List[str]]):
+        hatch_patterns (list, optional):
             A list of hatch patterns to use for each dataset in the stacked
             bars.
-        figsize (Optional[Tuple[int, int]]):
+        figsize (tuple(int, int), optional):
             The size of the figure in inches. Default is (8, 6).
-        working_dir (Optional[str]):
+        working_dir (str, optional):
             Path to the directory where the figure will be saved. Default is the
             current working directory if not specified.
 
