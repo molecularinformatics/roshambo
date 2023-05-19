@@ -38,69 +38,69 @@ def get_similarity_scores(
             Name of the reference molecule file.
         dataset_files_pattern (str):
             File pattern to match the dataset molecule files.
-        ignore_hs (bool):
+        ignore_hs (bool, optional):
             Whether to ignore hydrogens. Defaults to False.
-        n_confs (int):
+        n_confs (int, optional):
             Number of conformers to generate. Defaults to 10.
-        keep_mol (bool):
+        keep_mol (bool, optional):
             Whether to keep the original molecule in addition to the conformers.
             Defaults to False.
-        working_dir (str):
+        working_dir (str, optional):
             Working directory. All output files will be written to this directory.
             Defaults to the current directory.
-        name_prefix (str):
+        name_prefix (str, optional):
             Prefix to use for the molecule names if not found in the input files.
             Defaults to "mol".
-        smiles_kwargs (dict):
+        smiles_kwargs (dict, optional):
             Additional keyword arguments to pass to the `smiles_to_rdmol` function.
-        embed_kwargs (dict):
+        embed_kwargs (dict, optional):
             Additional keyword arguments to pass to the `smiles_to_rdmol` function.
         gpu_id (int, optional):
             ID of the GPU to use for running PAPER. Defaults to 0.
-        volume_type (str):
+        volume_type (str, optional):
             The type of overlap volume calculation to use. Options are 'analytic'
             or 'gaussian'. Defaults to 'analytic'.
-        n (int):
+        n (int, optional):
             The order of the analytic overlap volume calculation. Defaults to 2.
-        proxy_cutoff (float):
+        proxy_cutoff (float, optional):
             The distance cutoff to use for the atoms to be considered neighbors
             and for which overlap volume will be calculated in the analytic
             volume calculation. If not provided, will compute neighboring atoms based
             on this codition: |R_i - R_j| <= sigma_i + sigma_j + eps. Defaults to None.
-        epsilon (float):
+        epsilon (float, optional):
             The Gaussian cutoff to use in this condition:
             |R_i - R_j| <= sigma_i + sigma_j + eps in the analytic volume
             calculation. R corresponds to the atomic coordinates, sigma is the
             radius. The larger the epsilon, the greater the number of neighbors
             each atom will have, so that in the limit of large epsilon, each atom
             will have all the remaining atoms as neighbors. Defaults to 0.1.
-        res (float):
+        res (float, optional):
             The grid resolution to use for the Gaussian volume calculation.
             Defaults to 0.4.
-        margin (float):
+        margin (float, optional):
             The margin to add to the grid box size for the Gaussian volume
             calculation. Defaults to 0.4.
-        use_carbon_radii (bool):
+        use_carbon_radii (bool, optional):
             Whether to use carbon radii for the overlap calculations.
             Defaults to True.
-        color (bool):
+        color (bool, optional):
             Whether to calculate color scores in addition to shape scores.
             Defaults to False.
-        fdef_path (str):
+        fdef_path (str, optional):
             The file path to the feature definition file to use for the pharmacophore
             calculation. Uses BaseFeatures.fdef if not provided. Defaults to None.
-        sort_by (str):
+        sort_by (str, optional):
             The score to sort the final results by. Defaults to 'ShapeTanimoto'.
-        write_to_file (bool):
+        write_to_file (bool, optional):
             Whether to write the transformed molecules to a sdf file.
             Defaults to False.
-        max_conformers (int):
+        max_conformers (int, optional):
             The maximum number of conformers to write for each molecule.
             Defaults to 1, meaning that only the best conformer structure will
             be written.
-        filename (str):
+        filename (str, optional):
             The name of the output file to write. Defaults to 'hits.sdf'.
-        **conf_kwargs (dict):
+        **conf_kwargs (dict, optional):
             Additional keyword arguments to pass to the `generate_conformers` function.
     """
     sm = GetSimilarityScores(
