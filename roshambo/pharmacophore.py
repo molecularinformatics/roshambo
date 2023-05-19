@@ -176,7 +176,11 @@ def calc_custom_pharm(rdkit_mol, compiled_smarts):
     return pharmacophore
 
 
-def draw_pharm(rdkit_mol, features, filename="pharm.jpg"):
+def draw_pharm(rdkit_mol, features, filename="pharm.jpg", working_dir=None):
+
+    if not working_dir:
+        working_dir = os.getcwd()
+
     atom_highlights = defaultdict(list)
     highlight_rads = {}
     for feature in features:
@@ -207,10 +211,10 @@ def draw_pharm(rdkit_mol, features, filename="pharm.jpg"):
     drawer.FinishDrawing()
     svg = drawer.GetDrawingText().replace("svg:", "")
     SVG(svg)
-    with open("pharm.svg", "w") as f:
+    with open(f"{working_dir}/pharm.svg", "w") as f:
         f.write(svg)
 
-    svg2png(bytestring=svg, write_to="image.png")
+    svg2png(bytestring=svg, write_to=f"{working_dir}/image.png")
 
     fig, (ax, picture) = plt.subplots(
         nrows=2,
@@ -218,11 +222,11 @@ def draw_pharm(rdkit_mol, features, filename="pharm.jpg"):
         gridspec_kw={"height_ratios": [1, 5]},
     )
 
-    mol_image = img.imread("image.png")
+    mol_image = img.imread(f"{working_dir}/image.png")
     picture.imshow(mol_image)
     picture.axis("off")
-    os.remove("image.png")
-    os.remove("pharm.svg")
+    os.remove(f"{working_dir}/image.png")
+    os.remove(f"{working_dir}/pharm.svg")
 
     # Data for the circles
     circle_radii = [0, 50, 100, 150, 200, 250]
@@ -259,7 +263,7 @@ def draw_pharm(rdkit_mol, features, filename="pharm.jpg"):
 
     # Set aspect ratio to equal
     ax.set_aspect("equal", adjustable="box")
-    plt.savefig(filename, dpi=600)
+    plt.savefig(f"{working_dir}/{filename}", dpi=600)
 
 
 def calc_single_pharm_overlap(p1, p2):
