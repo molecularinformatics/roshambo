@@ -22,7 +22,9 @@ from roshambo import constants
 from roshambo.constants import FEATURES
 
 
-def calc_pharm(rdkit_mol, fdef_path=None, write_to_file=False):
+def calc_pharm(
+    rdkit_mol, fdef_path=None, write_to_file=False, draw=False, working_dir=None
+):
     """
     Calculates the pharmacophore features of an RDKit molecule.
 
@@ -36,6 +38,12 @@ def calc_pharm(rdkit_mol, fdef_path=None, write_to_file=False):
         write_to_file (bool, optional):
             Whether to write the pharmacophore features to a .csv file in the same
             working directory. Defaults to False.
+        draw (bool, optional):
+            Wether to draw the pharmacophore features using a 2D representation of the
+            molecule. Defaults to False.
+        working_dir (str, optional):
+            Directory where the 2D molecule representation with highlighted features
+            will be saved. Defaults to current working directory if not provided.
 
     Returns:
         list:
@@ -62,6 +70,13 @@ def calc_pharm(rdkit_mol, fdef_path=None, write_to_file=False):
             columns=["Type", "Atom Indices", "Coordinates", "Radius", "Normal"],
         )
         df.to_csv("pharmacophores.csv")
+
+    if draw:
+        mol_name = rdkit_mol.GetProp("_Name")
+        image_file = f"{mol_name}.jpg" if mol_name else "pharm.jpg"
+        draw_pharm(
+            rdkit_mol, pharmacophore, filename=image_file, working_dir=working_dir
+        )
     return pharmacophore
 
 
