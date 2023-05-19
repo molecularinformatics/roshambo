@@ -146,6 +146,8 @@ class GetSimilarityScores:
         self.translation = np.array([])
         self.transformed_molecules = []
 
+        print(f"Total number of molecules for transformation: {len(self.dataset_mols)}")
+
     def run_paper(self, gpu_id=0):
         """
         Runs the PAPER package to compute the transformation arrays that result in the
