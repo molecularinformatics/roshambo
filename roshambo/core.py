@@ -111,6 +111,7 @@ class GetSimilarityScores:
         **conf_kwargs,
     ):
         # TODO: replace conf_kwargs with conf_dict
+        # TODO: add draw_pharm as parameter to core fun
         self.working_dir = working_dir or os.getcwd()
         self.n_confs = n_confs
         self.conf_kwargs = conf_kwargs
