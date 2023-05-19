@@ -367,6 +367,9 @@ def prepare_mols(
             - A list of molecule names.
     """
 
+    if not working_dir:
+        working_dir = os.getcwd()
+
     st = time.time()
     processed_mols = []
     mol_names = []
@@ -401,7 +404,7 @@ def prepare_mols(
             mol_keys.append(mol.get_inchikey())
 
     # Write processed molecules to an SDF file
-    sd_writer = Chem.SDWriter("mols.sdf")
+    sd_writer = Chem.SDWriter(f"{working_dir}/mols.sdf")
     for mol in processed_mols:
         sd_writer.write(mol.mol)
     sd_writer.close()
