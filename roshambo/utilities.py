@@ -143,7 +143,7 @@ def smiles_to_rdmol(
         file_names (list of str):
             A list of paths to SMILES files.
         ignore_hs (bool, optional):
-            Whether or not to ignore hydrogens. Defaults to True.
+            Whether to ignore hydrogens. Defaults to True.
         name_prefix (str, optional):
             The name to use for molecules. Molecules will be named as
             f"{name_prefix}_0", f"{name_prefix}_1", ..., f"{name_prefix}_N" if they do
