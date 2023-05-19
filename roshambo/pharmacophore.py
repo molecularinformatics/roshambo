@@ -466,14 +466,13 @@ def calc_normal_aromatic(mol, ring_atoms, center):
     """
     Calculate normal vector of an aromatic ring in a molecule.
 
-    Parameters
-    ----------
-    mol (rdkit.Chem.rdchem.Mol):
-        An RDKit molecule object.
-    ring_atoms (list of int):
-        A list of atom indices that belong to the aromatic ring.
-    center (numpy.ndarray):
-        A NumPy array representing the 3D coordinates of the ring's center.
+    Args:
+        mol (rdkit.Chem.rdchem.Mol):
+            An RDKit molecule object.
+        ring_atoms (list of int):
+            A list of atom indices that belong to the aromatic ring.
+        center (numpy.ndarray):
+            A NumPy array representing the 3D coordinates of the ring's center.
 
     Returns:
         rdkit.Geometry.Point3D:
