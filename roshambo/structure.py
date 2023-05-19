@@ -167,44 +167,44 @@ class Molecule:
         """Generates conformers for a molecule and optionally optimizes or aligns them.
 
         Args:
-            n_confs (int):
+            n_confs (int, optional):
                 The number of conformers to generate. Defaults to 10.
-            random_seed (int):
+            random_seed (int, optional):
                 The seed for the random number generator used in conformer generation.
                 Defaults to 999.
-            method (str):
+            method (str, optional):
                 The method for embedding conformers, one of "ETDG", "ETKDG", or
                 "ETKDGv2". Defaults to "ETKDGv2".
-            ff (str):
+            ff (str, optional):
                 The force field to use for conformer optimization, one of "UFF",
                 "MMFF94s", or "MMFF94s_noEstat". Defaults to "MMFF94s".
-            add_hs (bool):
+            add_hs (bool, optional):
                 Whether to add hydrogens to the molecule before conformer generation.
                 Defaults to True.
-            opt_confs (bool):
+            opt_confs (bool, optional):
                 Whether to optimize the generated conformers using the specified force
                 field.Defaults to False.
-            calc_energy (bool):
+            calc_energy (bool, optional):
                 Whether to calculate the energy of the conformers without optimization.
                 Defaults to False.
-            energy_iters (int):
+            energy_iters (int, optional):
                 The maximum number of iterations to use in energy minimization.
                 Defaults to 200.
-            energy_cutoff (float):
+            energy_cutoff (float, optional):
                 The maximum energy difference (in kcal/mol) to keep a conformer after
                 energy minimization. Energy difference is calculated between the lowest
                 energy conformer and the current one. Defaults to np.inf, meaning that
                 all conformers are kept.
-            align_confs (bool):
+            align_confs (bool, optional):
                 Whether to align the conformers to each other using the first conformer
                 as a reference.
-            rms_cutoff (float):
+            rms_cutoff (float, optional):
                 The RMSD cutoff (in Angstroms) for clustering conformers based on
                 similarity. Only the conformer corresponding to the centroid of each
                 cluster is returned.
-            num_threads (int):
+            num_threads (int, optional):
                 The number of threads to use in conformer generation and optimization.
-            rdkit_args (dict):
+            rdkit_args (dict, optional):
                 Additional arguments to pass to RDKit for conformer generation
                 (rdkit.Chem.rdDistGeom.EmbedMultipleConfs)
 
@@ -331,7 +331,7 @@ class Molecule:
             ff (str):
                 The name of the force field to use. Supported options are "UFF",
                 "MMFF94s", and "MMFF94s_noEstat".
-            conf_id (int):
+            conf_id (int, optional):
                 The ID of the conformer for which to generate the force field.
                 Defaults to -1, indicating the first conformer in the molecule.
 
