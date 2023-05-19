@@ -594,11 +594,13 @@ def plot_scores_dist(df, columns, title="Score Distributions", working_dir=None)
         working_dir = os.getcwd()
 
     # Create subplots
-    fig, axes = plt.subplots(len(columns), 1, figsize=(8, len(columns) * 6))
+    fig, axes = plt.subplots(
+        len(columns), 1, figsize=(8, len(columns) * 6), squeeze=False
+    )
 
     # Iterate over columns and plot distributions
     for i, column in enumerate(columns):
-        ax = axes[i]
+        ax = axes[i, 0]
         data = df[column]
 
         # Plot histogram
