@@ -241,13 +241,14 @@ class GetSimilarityScores:
                 The distance cutoff to use for the atoms to be considered neighbors
                 and for which overlap volume will be calculated in the analytic
                 volume calculation. If not provided, will compute neighboring atoms based
-                on this codition: |R_i - R_j| <= sigma_i + sigma_j + eps.
+                on this condition: |R_i - R_j| <= sigma_i + sigma_j + eps.
                 Defaults to None.
             epsilon (float, optional):
                 The Gaussian cutoff to use in this condition:
                 |R_i - R_j| <= sigma_i + sigma_j + eps in the analytic volume
                 calculation. R corresponds to the atomic coordinates, sigma is the
-                radius. The larger the epsilon, the greater the number of neighbors
+                radius, and epsilon is an arbitrary parameter called the Gaussian
+                cutoff. The larger the epsilon, the greater the number of neighbors
                 each atom will have, so that in the limit of large epsilon, each atom
                 will have all the remaining atoms as neighbors. Defaults to 0.1.
             res (float, optional):
