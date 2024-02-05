@@ -2,8 +2,6 @@
 
 # Overview
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-
 `roshambo` is a python package for robust Gaussian molecular shape comparison. It 
 provides efficient and fast algorithms for comparing the shapes of small molecules. 
 The package supports reading input files in the SDF and SMILES formats. 
