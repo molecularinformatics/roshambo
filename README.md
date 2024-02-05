@@ -25,7 +25,7 @@ compile `rdkit` with the `INCHI` option enabled. Please refer to the `rdkit`
 [documentation](https://www.rdkit.org/docs/Install.html#building-from-source) for 
 installation instructions. 
 
-> [!NOTE]  
+> [!IMPORTANT]    
 > We have tested `roshambo` with `rdkit` version 2023.03.1. We highly recommend using this version of `rdkit` to avoid any compatibility issues. 
 
 Additionally, since `roshambo` is GPU-accelerated, you need to have CUDA installed. 
