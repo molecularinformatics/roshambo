@@ -1,10 +1,12 @@
-# roshambo
+# <img alt="roshambo" src="docs/logo.jpg" width="500">
+
+# Overview
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 `roshambo` is a python package for robust Gaussian molecular shape comparison. It provides efficient and fast algorithms for comparing the shapes of small molecules. 
-The package supports input file formats including PDB, MOL, and SMILES. It uses [PAPER](https://simtk.org/projects/paper/)
- in the backend for overlap optimization. 
+The package supports reading input files in the SDF and SMILES formats. It uses [PAPER](https://simtk.org/projects/paper/)
+in the backend for overlap optimization. 
 
 ## Installation
 
@@ -16,7 +18,7 @@ The package supports input file formats including PDB, MOL, and SMILES. It uses 
 - pandas
 - cython
 
-## Installation
+### Installation
 
 1. Clone the repository:
 
@@ -33,7 +35,7 @@ The package supports input file formats including PDB, MOL, and SMILES. It uses 
 3. Install the package:
 
     ```bash
-    python setup.py build_ext
+    pip3 install .
     ```
    
 ## Usage
