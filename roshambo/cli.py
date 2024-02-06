@@ -1,7 +1,10 @@
 import sys
 import argparse
 
+import numpy as np
+
 from roshambo.api import get_similarity_scores
+
 
 # TODO: correct args input
 # TODO: find a way to provide the kwargs
