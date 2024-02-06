@@ -112,7 +112,65 @@ def main(argv=None):
         help="The maximum number of conformers to write for each molecule.",
     )
     parser.add_argument(
-        "--filename", default="hits.sdf", help="The name of the output file to write."
+        "--filename",
+        type=str,
+        default="hits.sdf",
+        help="The name of the output file to write.",
+    )
+    parser.add_argument(
+        "--random_seed",
+        type=int,
+        default=999,
+        help="Random seed for conformer generation.",
+    )
+    parser.add_argument(
+        "--method",
+        type=str,
+        choices=["ETDG", "ETKDG", "ETKDGv2", "ETKDGv3"],
+        default="ETKDGv3",
+        help="The method to use for conformer generation (ETDG, ETKDG, or ETKDGv2)",
+    )
+    parser.add_argument(
+        "--ff",
+        type=str,
+        choices=["UFF", "MMFF94s", "MMFF94s_noEstat"],
+        default="MMFF94s",
+        help="The force field to use for conformer generation (UFF, MMFF94s, or MMFF94s_noEstat)",
+    )
+    parser.add_argument(
+        "--opt_confs", action="store_true", help="Optimize the conformers."
+    )
+    parser.add_argument(
+        "--calc_energy",
+        action="store_true",
+        help="Calculate the energy of the conformers.",
+    )
+    parser.add_argument(
+        "--energy_iters",
+        type=int,
+        default=200,
+        help="Number of iterations for energy calculation.",
+    )
+    parser.add_argument(
+        "--energy_cutoff",
+        type=float,
+        default=np.inf,
+        help="Maximum energy difference (in kcal/mol) to keep a conformer after energy minimization.",
+    )
+    parser.add_argument(
+        "--align_confs", action="store_true", help="Align the conformers."
+    )
+    parser.add_argument(
+        "--rms_cutoff",
+        type=float,
+        default=None,
+        help="RMSD cutoff for conformer clustering.",
+    )
+    parser.add_argument(
+        "--num_threads",
+        type=int,
+        default=1,
+        help="Number of threads to use for conformer generation.",
     )
 
     args = parser.parse_args(argv)
@@ -147,6 +205,17 @@ def main(argv=None):
         write_to_file=args.write_to_file,
         max_conformers=args.max_conformers,
         filename=args.filename,
+        random_seed=args.random_seed,
+        method=args.method,
+        ff=args.ff,
+        # add_hs=args.add_hs,
+        opt_confs=args.opt_confs,
+        calc_energy=args.calc_energy,
+        energy_iters=args.energy_iters,
+        energy_cutoff=args.energy_cutoff,
+        align_confs=args.align_confs,
+        rms_cutoff=args.rms_cutoff,
+        num_threads=args.num_threads,
     )
 
 
