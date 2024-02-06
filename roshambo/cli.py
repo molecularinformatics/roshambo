@@ -18,9 +18,7 @@ def main(argv=None):
         "dataset_files_pattern",
         help="File pattern to match the dataset molecule files.",
     )
-    parser.add_argument(
-        "--ignore_hs", type=bool, default=True, help="Ignore hydrogens."
-    )
+    parser.add_argument("--ignore_hs", action="store_true", help="Ignore hydrogens.")
     parser.add_argument(
         "--n_confs", type=int, default=10, help="Number of conformers to generate."
     )
@@ -74,9 +72,10 @@ def main(argv=None):
         help="The margin to add to the grid box size for the Gaussian volume calculation.",
     )
     parser.add_argument(
-        "--use_carbon_radii",
-        action="store_true",
-        help="Use carbon radii for the overlap calculations.",
+        "--no_carbon_radii",
+        action="store_false",
+        dest="use_carbon_radii",
+        help="Disable the use of carbon radii for the overlap calculations.",
     )
     parser.add_argument(
         "--color",
