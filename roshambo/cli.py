@@ -27,7 +27,7 @@ def main(argv=None):
         action="store_true",
         help="Keep the original molecule in addition to the conformers.",
     )
-    parser.add_argument("--working_dir", help="Working directory.")
+    parser.add_argument("--working_dir", default=None, help="Working directory.")
     parser.add_argument(
         "--name_prefix",
         default="mol",
@@ -51,6 +51,7 @@ def main(argv=None):
     parser.add_argument(
         "--proxy_cutoff",
         type=float,
+        default=None,
         help="The distance cutoff to use for the atoms to be considered neighbors.",
     )
     parser.add_argument(
