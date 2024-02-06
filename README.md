@@ -66,8 +66,30 @@ export CUDA_HOME=/path/to/your/cuda/installation
 ## Usage
 
 ```python
-import roshambo
+from roshambo.api import get_similarity_scores
 
-# Call functions from the package
-roshambo.some_function()
+get_similarity_scores(
+    ref_file="query.sdf",
+    dataset_files_pattern="dataset.sdf",
+    ignore_hs=True,
+    n_confs=0,
+    use_carbon_radii=True,
+    color=True,
+    sort_by="ComboTanimoto",
+    write_to_file=True,
+    gpu_id=0,
+    working_dir="data/basic_run",
+)
+```
+The above code will run a similarity calculation between the reference molecule in 
+`query.sdf` and all the molecules in the `dataset.sdf` file. Hydrogen atoms will be 
+ignored when aligning the molecules and carbon radii will be used. No conformers will 
+be generated for the dataset molecules. Both shape and color similarity scores will be 
+calculated and the results will be written to a file. The scores will be sorted by the 
+`ComboTanimoto` score and saved in the directory `data/basic_run`. 
 
+You can also run the above example from the command line:
+
+```bash
+roshambo --n_confs 0 --ignore_hs --color --sort_by ComboTanimoto --write_to_file --working_dir data/basic_run --gpu_id 0 query.sdf dataset.sdf
+```
