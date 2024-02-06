@@ -34,6 +34,12 @@ def main(argv=None):
         help="Prefix to use for the molecule names if not found in the input files.",
     )
     parser.add_argument(
+        "--smiles_delimiter",
+        type=str,
+        default=" ",
+        help="Specify the delimiter for parsing SMILES. Use 'SPACE' for space, 'TAB' for tab, etc.",
+    )
+    parser.add_argument(
         "--gpu_id", type=int, default=0, help="ID of the GPU to use for running PAPER."
     )
     parser.add_argument(
@@ -109,6 +115,13 @@ def main(argv=None):
 
     args = parser.parse_args(argv)
 
+    if args.smiles_delimiter == "SPACE":
+        delimiter = " "
+    elif args.smiles_delimiter == "TAB":
+        delimiter = "\t"
+    else:
+        delimiter = args.smiles_delimiter
+
     get_similarity_scores(
         ref_file=args.ref_file,
         dataset_files_pattern=args.dataset_files_pattern,
@@ -117,6 +130,7 @@ def main(argv=None):
         keep_mol=args.keep_mol,
         working_dir=args.working_dir,
         name_prefix=args.name_prefix,
+        smiles_kwargs={"delimiter": delimiter},
         gpu_id=args.gpu_id,
         volume_type=args.volume_type,
         n=args.n,
