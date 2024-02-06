@@ -91,10 +91,12 @@ def main(argv=None):
     )
     parser.add_argument(
         "--fdef_path",
+        type=str,
         help="The file path to the feature definition file to use for the pharmacophore calculation.",
     )
     parser.add_argument(
         "--sort_by",
+        type=str,
         default="ShapeTanimoto",
         help="The score to sort the final results by.",
     )
