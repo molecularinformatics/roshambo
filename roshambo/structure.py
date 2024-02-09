@@ -246,53 +246,56 @@ class Molecule:
             logging.warning(f"No confs found for {self.mol_name()}")
 
         energies = None
-        if opt_confs:
-            # Optimize conformers using user supplied force field
-            assert ff in [
-                "UFF",
-                "MMFF94s",
-                "MMFF94s_noEstat",
-            ], f"{ff} not supported for optimizing conformers"
-            results = None
-            if ff == "UFF":
-                results = rdForceFieldHelpers.UFFOptimizeMoleculeConfs(
-                    self.mol, numThreads=num_threads, maxIters=energy_iters
-                )
-            elif ff == "MMFF94s":
-                results = rdForceFieldHelpers.MMFFOptimizeMoleculeConfs(
-                    self.mol,
-                    numThreads=num_threads,
-                    maxIters=energy_iters,
-                    mmffVariant="MMFF94s",
-                )
-            energies = [energy for not_converged, energy in results]
-
-        elif calc_energy:
-            # Compute energy of conformers without opt
-            energies = []
-            for conf in self.mol.GetConformers():
-                force_field = self._get_conf_ff(self.mol, ff, conf_id=conf.GetId())
-                energy = force_field.CalcEnergy()
-                energies.append(energy)
-
-        if energies:
-            min_energy = np.min(energies)
-            # Add energy to conf properties
-            for energy, conf in zip(energies, self.mol.GetConformers()):
-                conf.SetDoubleProp(f"rdkit_{ff}_energy", energy)
-                conf.SetDoubleProp(f"rdkit_{ff}_delta_energy", energy - min_energy)
-
-            # Sort confs by energy and remove ones above energy_cutoff
-            mol_copy = copy.deepcopy(self.mol)
-            sorted_confs = [
-                conf
-                for energy, conf in sorted(
-                    zip(energies, mol_copy.GetConformers()), key=lambda x: x[0]
-                )
-                if energy - min_energy <= energy_cutoff
-            ]
-            self.mol.RemoveAllConformers()
-            [self.mol.AddConformer(conf, assignId=True) for conf in sorted_confs]
+        try:
+            if opt_confs:
+                # Optimize conformers using user supplied force field
+                assert ff in [
+                    "UFF",
+                    "MMFF94s",
+                    "MMFF94s_noEstat",
+                ], f"{ff} not supported for optimizing conformers"
+                results = None
+                if ff == "UFF":
+                    results = rdForceFieldHelpers.UFFOptimizeMoleculeConfs(
+                        self.mol, numThreads=num_threads, maxIters=energy_iters
+                    )
+                elif ff == "MMFF94s":
+                    results = rdForceFieldHelpers.MMFFOptimizeMoleculeConfs(
+                        self.mol,
+                        numThreads=num_threads,
+                        maxIters=energy_iters,
+                        mmffVariant="MMFF94s",
+                    )
+                energies = [energy for not_converged, energy in results]
+    
+            elif calc_energy:
+                # Compute energy of conformers without opt
+                energies = []
+                for conf in self.mol.GetConformers():
+                    force_field = self._get_conf_ff(self.mol, ff, conf_id=conf.GetId())
+                    energy = force_field.CalcEnergy()
+                    energies.append(energy)
+    
+            if energies:
+                min_energy = np.min(energies)
+                # Add energy to conf properties
+                for energy, conf in zip(energies, self.mol.GetConformers()):
+                    conf.SetDoubleProp(f"rdkit_{ff}_energy", energy)
+                    conf.SetDoubleProp(f"rdkit_{ff}_delta_energy", energy - min_energy)
+    
+                # Sort confs by energy and remove ones above energy_cutoff
+                mol_copy = copy.deepcopy(self.mol)
+                sorted_confs = [
+                    conf
+                    for energy, conf in sorted(
+                        zip(energies, mol_copy.GetConformers()), key=lambda x: x[0]
+                    )
+                    if energy - min_energy <= energy_cutoff
+                ]
+                self.mol.RemoveAllConformers()
+                [self.mol.AddConformer(conf, assignId=True) for conf in sorted_confs]
+        except:
+            logging.warning(f"Cannot optimize and/or calculate energies for {self.mol_name()}")
 
         if align_confs:
             # Align confs to each other using the first conf as the ref
