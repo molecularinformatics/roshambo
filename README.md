@@ -62,6 +62,11 @@ export CUDA_HOME=/path/to/your/cuda/installation
     ```bash
     pip3 install .
     ```
+    Depending on your cluster/machine settings, you might need install in editable mode:
+   
+    ```bash
+    pip3 install -e .
+    ```
    
 ## Usage
 
