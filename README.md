@@ -22,7 +22,7 @@ conda activate roshambo
 `roshambo` requires a compiled version of `rdkit`. You need to compile `rdkit` with 
 the same version of python that you are using to install `roshambo`. You also need to 
 compile `rdkit` with the `INCHI` option enabled. Please refer to the `rdkit` 
-[documentation](https://www.rdkit.org/docs/Install.html#building-from-source) for 
+[documentation](https://www.rdkit.org/docs/Install.html#building-from-source) and [blog](https://greglandrum.github.io/rdkit-blog/posts/2023-03-17-setting-up-a-cxx-dev-env2.html) for 
 installation instructions. 
 
 > [!IMPORTANT]    
@@ -42,6 +42,8 @@ export PYTHONPATH=$PYTHONPATH:$RDBASE
 
 export CUDA_HOME=/path/to/your/cuda/installation
 ```
+
+Below is a qick ROSHAMBO installation guide. Referencing this [blog post](https://iwatobipen.wordpress.com/2024/08/08/new-cheminformatics-package-for-molecular-alignment-and-3d-similarity-scoring-cheminformatics-rdkit-memo/) from N. B. Taka might also be helpful for new users.
 
 ### Installation
 
